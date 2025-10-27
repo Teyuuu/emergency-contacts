@@ -1,0 +1,483 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Decorative gradient circles */
+.bg-circle {
+    position: fixed;
+    border-radius: 50%;
+    z-index: -1;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.circle-1 {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, #f5414a, #4c66db);
+    top: -100px;
+    right: -100px;
+}
+
+.circle-2 {
+    width: 350px;
+    height: 350px;
+    background: linear-gradient(135deg, #4c66db, #f5414a);
+    bottom: 10%;
+    left: -100px;
+}
+
+.circle-3 {
+    width: 300px;
+    height: 300px;
+    background: linear-gradient(135deg, #4c66db, #f5414a);
+    bottom: -100px;
+    right: 10%;
+}
+
+.circle-4 {
+    width: 250px;
+    height: 250px;
+    background: linear-gradient(135deg, #f5414a, #4c66db);
+    top: 40%;
+    right: -80px;
+}
+
+.container {
+    max-width: 700px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.header h1 {
+    color: #2d3748;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.city-logo {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.priority-card {
+    background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%);
+    border-radius: 25px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.tap-text {
+    color: white;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.priority-content {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    position: relative;
+}
+
+.priority-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #ff0000;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.dial-number {
+    color: #ff8844;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.emergency-label {
+    color: #718096;
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+.main-number {
+    color: #ff0000;
+    font-size: 4rem;
+    font-weight: 900;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.contact-card {
+    background: white;
+    border: 3px solid #e53e3e;
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.contact-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.contact-logo {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.contact-info {
+    flex: 1;
+}
+
+.contact-name {
+    color: #2d3748;
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.contact-number {
+    color: #e53e3e;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+.button-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.btn {
+    padding: 15px 25px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-call {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.btn-call-priority {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    color: white;
+}
+
+.btn-save-priority {
+    background: linear-gradient(135deg, #667eea 0%, #4facfe 100%);
+    color: white;
+}
+
+.save-all-section {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.save-all-text {
+    color: #2d3748;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.btn-save-all {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 50px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s;
+}
+
+.btn-save-all:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+}
+
+.icon {
+    font-size: 1.3rem;
+}
+
+/* Tablet responsive (768px - 1024px) */
+@media (max-width: 1024px) {
+    .container {
+        max-width: 600px;
+    }
+
+    .circle-1 {
+        width: 350px;
+        height: 350px;
+    }
+
+    .circle-2 {
+        width: 300px;
+        height: 300px;
+    }
+
+    .circle-3 {
+        width: 250px;
+        height: 250px;
+    }
+
+    .circle-4 {
+        width: 200px;
+        height: 200px;
+    }
+}
+
+/* Mobile responsive (max-width: 768px) */
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
+    }
+
+    .container {
+        max-width: 100%;
+    }
+
+    .header {
+        gap: 10px;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .city-logo {
+        width: 50px;
+        height: 50px;
+    }
+
+    .priority-card {
+        padding: 20px;
+    }
+
+    .tap-text {
+        font-size: 1.1rem;
+    }
+
+    .priority-content {
+        padding: 20px;
+    }
+
+    .priority-badge {
+        font-size: 0.75rem;
+        padding: 6px 12px;
+        top: 10px;
+        right: 10px;
+    }
+
+    .dial-number {
+        font-size: 1.5rem;
+    }
+
+    .main-number {
+        font-size: 3rem;
+    }
+
+    .contact-card {
+        padding: 20px;
+    }
+
+    .contact-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .contact-logo {
+        width: 60px;
+        height: 60px;
+    }
+
+    .contact-name {
+        font-size: 1rem;
+    }
+
+    .contact-number {
+        font-size: 1.1rem;
+    }
+
+    .btn {
+        font-size: 1rem;
+        padding: 12px 15px;
+    }
+
+    .btn-save-all {
+        padding: 12px 40px;
+        font-size: 1.1rem;
+    }
+
+    .save-all-text {
+        font-size: 1rem;
+    }
+
+    .circle-1 {
+        width: 250px;
+        height: 250px;
+        top: -80px;
+        right: -80px;
+    }
+
+    .circle-2 {
+        width: 200px;
+        height: 200px;
+        bottom: 5%;
+        left: -80px;
+    }
+
+    .circle-3 {
+        width: 180px;
+        height: 180px;
+        bottom: -80px;
+        right: 5%;
+    }
+
+    .circle-4 {
+        width: 150px;
+        height: 150px;
+        top: 35%;
+        right: -60px;
+    }
+}
+
+/* Small mobile (max-width: 480px) */
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 1.3rem;
+    }
+
+    .city-logo {
+        width: 45px;
+        height: 45px;
+    }
+
+    .main-number {
+        font-size: 2.5rem;
+    }
+
+    .contact-name {
+        font-size: 0.95rem;
+    }
+
+    .contact-number {
+        font-size: 1.3rem;
+    }
+
+    .button-group {
+        gap: 10px;
+    }
+
+    .btn {
+        font-size: 0.9rem;
+        padding: 10px 12px;
+        gap: 5px;
+    }
+
+    .icon {
+        font-size: 1.1rem;
+    }
+
+    .btn-save-all {
+        padding: 12px 35px;
+        font-size: 1rem;
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 600px) and (orientation: landscape) {
+    body {
+        padding: 10px;
+        align-items: flex-start;
+    }
+
+    .container {
+        margin: 10px 0;
+    }
+
+    .header {
+        margin-bottom: 15px;
+    }
+
+    .priority-card,
+    .contact-card {
+        margin-bottom: 15px;
+    }
+
+    .save-all-section {
+        margin-top: 15px;
+        margin-bottom: 15px;
+    }
+}

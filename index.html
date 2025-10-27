@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Contacts</title>
+    <link rel="stylesheet" href="contact.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Emergency Contacts</h1>
+            <img src="images/bacoor-logo.jpg" alt="bacoor-logo Logo" class="city-logo">
+        </div>
+
+        <!-- Decorative gradient circles -->
+        <div class="bg-circle circle-1"></div>
+        <div class="bg-circle circle-2"></div>
+        <div class="bg-circle circle-3"></div>
+        <div class="bg-circle circle-4"></div>
+
+        <!-- Priority Emergency -->
+        <div class="priority-card">
+            <div class="tap-text">Tap to call immediately</div>
+            <div class="priority-content">
+                <div class="priority-badge">Priority Emergency</div>
+                <div class="dial-number">DIAL</div>
+                <div class="main-number">161</div>
+                <div class="button-group">
+                    <button class="btn btn-call-priority" onclick="callNumber('161')">
+                        <span class="icon">📞</span> Call Now
+                    </button>
+                    <button class="btn btn-save-priority" onclick="saveContact('161', 'Emergency Alert 161')">
+                        <span class="icon">💾</span> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BDRRMO -->
+        <div class="contact-card">
+            <div class="contact-header">
+                <img src="images/bdrrmo-logo .png" alt="BDRRMO Logo" class="contact-logo">
+                <div class="contact-info">
+                    <div class="contact-name">
+                        Bacoor Disaster Risk Reduction and Management Office (BDRRMO)
+                    </div>
+                    <div class="contact-number">046-417-0727</div>
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-call" onclick="callNumber('046-417-0727')">
+                    <span class="icon">📞</span> Call Now
+                </button>
+                <button class="btn btn-save" onclick="saveContact('046-417-0727', 'Bacoor BDRRMO')">
+                    <span class="icon">💾</span> Save
+                </button>
+            </div>
+        </div>
+
+        <!-- PNP -->
+        <div class="contact-card">
+            <div class="contact-header">
+                <img src="images/pnp-logo.png" alt="PNP Logo" class="contact-logo">
+                <div class="contact-info">
+                    <div class="contact-name">
+                        Philippine National Police - Bacoor City (PNP)
+                    </div>
+                    <div class="contact-number">046-417-6366</div>
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-call" onclick="callNumber('046-417-6366')">
+                    <span class="icon">📞</span> Call Now
+                </button>
+                <button class="btn btn-save" onclick="saveContact('046-417-6366', 'PNP Bacoor City')">
+                    <span class="icon">💾</span> Save
+                </button>
+            </div>
+        </div>
+
+        <!-- BFP -->
+        <div class="contact-card">
+            <div class="contact-header">
+                <img src="images/bfp-logo.png" alt="BFP Logo" class="contact-logo">
+                <div class="contact-info">
+                    <div class="contact-name">
+                        Bureau Of Fire Protection - Bacoor City (BFP)
+                    </div>
+                    <div class="contact-number">046-417-6060</div>
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-call" onclick="callNumber('046-417-6060')">
+                    <span class="icon">📞</span> Call Now
+                </button>
+                <button class="btn btn-save" onclick="saveContact('046-417-2345', 'BFP Bacoor City')">
+                    <span class="icon">💾</span> Save
+                </button>
+            </div>
+        </div>
+
+        <!-- Save All -->
+        <div class="save-all-section">
+            <div class="save-all-text">Click if you want to</div>
+            <button class="btn-save-all" onclick="saveAllContacts()">Save All</button>
+        </div>
+    </div>
+
+    <script src="contact.js"></script>
+</body>
+</html>

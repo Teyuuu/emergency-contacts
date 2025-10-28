@@ -36,7 +36,8 @@ function saveAllContacts() {
         { number: '161', name: 'Emergency Alert 161' },
         { number: '046-417-0727', name: 'Bacoor BDRRMO' },
         { number: '046-417-6366', name: 'PNP Bacoor City' },
-        { number: '046-417-6060', name: 'BFP Bacoor City' }
+        { number: '046-417-6060', name: 'BFP Bacoor City' },
+        { number: '046-481-4120', name: 'Bacoor City Information Office' }
     ];
 
     // Create multiple vCards in one file

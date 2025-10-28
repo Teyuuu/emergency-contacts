@@ -113,7 +113,7 @@ body {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
-    margin-bottom: 30px;
+    margin-bottom: 5px;
 }
 
 .contact-card {
@@ -486,10 +486,6 @@ body {
         font-size: 0.8rem;
     }
 
-    .save-all-section {
-        margin-top: 12px;
-    }
-
     .btn-save-all {
         padding: 8px 25px;
         font-size: 0.85rem;
@@ -525,7 +521,7 @@ body {
     }
 
     .save-all-section {
-        margin-top: 15px;
-        margin-bottom: 15px;
+        margin-top: 5px;
+        margin-bottom:5px;
     }
 }

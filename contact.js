@@ -43,11 +43,11 @@ function saveAllContacts() {
     let allVCards = '';
     contacts.forEach(contact => {
         allVCards += `BEGIN:VCARD
-VERSION:3.0
-FN:${contact.name}
-TEL;TYPE=CELL:${contact.number}
-END:VCARD
-`;
+        VERSION:3.0
+        FN:${contact.name}
+        TEL;TYPE=CELL:${contact.number}
+        END:VCARD
+        `;
     });
 
     // Create blob and download link

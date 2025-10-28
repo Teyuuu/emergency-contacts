@@ -25,14 +25,6 @@ body {
     pointer-events: none;
 }
 
-.circle-1 {
-    width: 400px;
-    height: 400px;
-    background: linear-gradient(135deg, #f5414a, #4c66db);
-    top: -100px;
-    right: -100px;
-}
-
 .circle-2 {
     width: 350px;
     height: 350px;
@@ -155,6 +147,7 @@ body {
 
 .contact-header {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 15px;
     margin-bottom: 25px;
@@ -360,6 +353,10 @@ body {
     .contact-logo {
         width: 60px;
         height: 60px;
+    }
+    .PNP.logo {
+        width: 80px;
+        height: 80px;
     }
 
     .contact-name {

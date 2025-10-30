@@ -1,538 +1,135 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/*base styles*/
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #ffe8cc 0%, #abdbf7 100%);
-    min-height: 100vh;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    overflow-x: hidden;
-    overflow-y: auto;
-}
+* {margin: 0;padding: 0;box-sizing: border-box;}
+body {font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background: linear-gradient(135deg, #ffe8cc 0%, #abdbf7 100%);min-height: 100vh;padding: 20px;display: flex;justify-content: center;align-items: center;position: relative;overflow-x: hidden;overflow-y: auto;}
+.container {max-width: 1200px;width: 100%;position: relative;z-index: 1;}
 
-.container {
-    max-width: 1200px;
-    width: 100%;
-    position: relative;
-    z-index: 1;
-}
+/*header styles*/
 
-.header {
-    text-align: center;
-    margin-bottom: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-}
+.header {text-align: center;margin-bottom: 40px;display: flex;justify-content: center;align-items: center;gap: 20px;flex-wrap: wrap;}
+.header h1 {color: #1a365d;font-size: 2.5rem;font-weight: 700;text-shadow: 2px 2px 4px rgba(0,0,0,0.1);}
+.city-logo {width: 90px;height: 90px;object-fit: contain;border-radius: 50%;box-shadow: 0 8px 20px rgba(0,0,0,0.15);border: 4px solid white;}
 
-.header h1 {
-    color: #1a365d;
-    font-size: 2.5rem;
-    font-weight: 700;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-}
+/*Priority styles*/
 
-.city-logo {
-    width: 90px;
-    height: 90px;
-    object-fit: contain;
-    border-radius: 50%;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    border: 4px solid white;
-}
-
-.priority-card {
-    background: linear-gradient(135deg, #e74c3c 0%, #ff8c00 100%);
-    border-radius: 25px;
-    padding: 30px;
-    margin-bottom: 30px;
-    box-shadow: 0 12px 35px rgba(231, 76, 60, 0.3);
-}
-
-.tap-text {
-    color: white;
-    text-align: center;
-    font-size: 1.4rem;
-    font-weight: 600;
-    margin-bottom: 20px;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-}
-
-.priority-content {
-    background: white;
-    border-radius: 20px;
-    padding: 30px;
-    position: relative;
-}
-
-.priority-badge {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: linear-gradient(135deg, #dc143c, #ff4500);
-    color: white;
-    padding: 10px 24px;
-    border-radius: 25px;
-    font-weight: 700;
-    font-size: 0.95rem;
-    box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
-}
-
-.dial-number {
-    color: #ff6b35;
-    font-size: 2.2rem;
-    font-weight: 700;
-    margin-bottom: 5px;
-    text-align: center;
-}
-
-.main-number {
-    color: #e74c3c;
-    font-size: 5rem;
-    font-weight: 900;
-    text-align: center;
-    margin: 20px 0;
-    text-shadow: 2px 2px 8px rgba(231, 76, 60, 0.2);
-}
+.priority-card {background: linear-gradient(135deg, #e74c3c 0%, #ff8c00 100%);border-radius: 25px;padding: 30px;margin-bottom: 30px;box-shadow: 0 12px 35px rgba(231, 76, 60, 0.3);}
+.tap-text {color: white;text-align: center;font-size: 1.4rem;font-weight: 600;margin-bottom: 20px;text-shadow: 1px 1px 3px rgba(0,0,0,0.2);}
+.priority-content {background: white;border-radius: 20px;padding: 30px;position: relative;}
+.priority-badge {position: absolute;top: 15px;right: 15px;background: linear-gradient(135deg, #dc143c, #ff4500);color: white;padding: 10px 24px;border-radius: 25px;font-weight: 700;font-size: 0.95rem;box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);}
+.dial-number {color: #ff6b35;font-size: 2.2rem;font-weight: 700;margin-bottom: 5px;text-align: center;}
+.main-number {color: #e74c3c;font-size: 5rem;font-weight: 900;text-align: center;margin: 20px 0;text-shadow: 2px 2px 8px rgba(231, 76, 60, 0.2);}
 
 /* 2x2 Grid Layout for Contact Cards */
-.contacts-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    width: 100%;
-}
 
-.contact-card {
-    background: white;
-    border: 3px solid #ff6b35;
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow: 0 8px 20px rgba(255, 107, 53, 0.15);
-    transition: transform 0.3s, box-shadow 0.3s;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    box-sizing: border-box;
-}
+.contacts-grid {display: grid;grid-template-columns: repeat(2, 1fr);gap: 20px;width: 100%;}
+.contact-card {background: white;border: 3px solid #ff6b35;border-radius: 20px;padding: 25px;box-shadow: 0 8px 20px rgba(255, 107, 53, 0.15);transition: transform 0.3s, box-shadow 0.3s;display: flex;flex-direction: column;width: 100%;box-sizing: border-box;}
+.contact-card:hover {transform: translateY(-5px);box-shadow: 0 12px 30px rgba(255, 107, 53, 0.25);}
+.contact-header {display: flex;flex-direction: column;align-items: center;gap: 15px;margin-bottom: 20px;}
+.contact-logo {width: 80px;height: 80px;object-fit: contain;flex-shrink: 0;}
+.contact-info {flex: 1;text-align: center;}
+.contact-name {color: #1a365d;font-size: 1rem;font-weight: 600;line-height: 1.4;margin-bottom: 8px;}
 
-.contact-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 30px rgba(255, 107, 53, 0.25);
-}
+/* Buttons */
 
-.contact-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-}
+.button-group {display: grid;grid-template-columns: 1fr 1fr;gap: 10px;width: 100%;}
+.btn {padding: 12px 20px;border: none;border-radius: 12px;font-size: 1rem;font-weight: 600;cursor: pointer;display: flex;align-items: center;justify-content: center;gap: 8px;transition: transform 0.2s, box-shadow 0.2s;width: 100%;min-width: 0;}
+.btn:hover {transform: translateY(-2px);box-shadow: 0 5px 15px rgba(0,0,0,0.2);}
+.btn:active {transform: translateY(0);}
+.btn-call {background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);color: white;}
+.btn-save {background: linear-gradient(135deg, #ff8c00 0%, #ffa500 100%);color: white;}
+.btn-call-priority {background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);color: white;}
+.btn-save-priority {background: linear-gradient(135deg, #dc143c 0%, #ff4500 100%);color: white;}
 
-.contact-logo {
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
-    flex-shrink: 0;
-}
 
-.contact-info {
-    flex: 1;
-    text-align: center;
-}
+/* Save all styles */
 
-.contact-name {
-    color: #1a365d;
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.4;
-    margin-bottom: 8px;
-}
-
-.button-group {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    width: 100%;
-}
-
-.btn {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: transform 0.2s, box-shadow 0.2s;
-    width: 100%;
-    min-width: 0;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.btn:active {
-    transform: translateY(0);
-}
-
-.btn-call {
-    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-    color: white;
-}
-
-.btn-save {
-    background: linear-gradient(135deg, #ff8c00 0%, #ffa500 100%);
-    color: white;
-}
-
-.btn-call-priority {
-    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-    color: white;
-}
-
-.btn-save-priority {
-    background: linear-gradient(135deg, #dc143c 0%, #ff4500 100%);
-    color: white;
-}
-
-.save-all-section {
-    text-align: center;
-    margin-top: 30px;
-}
-
-.save-all-text {
-    color: #1a365d;
-    font-size: 1.3rem;
-    margin-bottom: 15px;
-    font-weight: 600;
-}
-
-.btn-save-all {
-    background: linear-gradient(135deg, #e74c3c 0%, #ff8c00 100%);
-    color: white;
-    padding: 18px 60px;
-    border: none;
-    border-radius: 30px;
-    font-size: 1.3rem;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
-    transition: all 0.3s;
-}
-
-.btn-save-all:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(231, 76, 60, 0.4);
-}
-
-.icon {
-    font-size: 1.2rem;
-}
+.save-all-section {text-align: center;margin-top: 30px;}
+.save-all-text {color: #1a365d;font-size: 1.3rem;margin-bottom: 15px;font-weight: 600;}
+.btn-save-all {background: linear-gradient(135deg, #e74c3c 0%, #ff8c00 100%);color: white;padding: 18px 60px;border: none;border-radius: 30px;font-size: 1.3rem;font-weight: 700;cursor: pointer;box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);transition: all 0.3s;}
+.btn-save-all:hover {transform: translateY(-3px);box-shadow: 0 12px 35px rgba(231, 76, 60, 0.4);}
+.icon {font-size: 1.2rem;}
 
 /* Tablet responsive (768px - 1024px) */
+
 @media (max-width: 1024px) {
-    .container {
-        max-width: 900px;
-    }
-
-    .contacts-grid {
-        gap: 15px;
-    }
-
-    .contact-card {
-        padding: 20px;
-    }
-
-    .contact-logo {
-        width: 70px;
-        height: 70px;
-    }
-
-    .contact-name {
-        font-size: 0.95rem;
-        font-weight: bold;
-    }
+.container {max-width: 900px;}
+.contacts-grid {gap: 15px;}
+.contact-card {padding: 20px;}
+.contact-logo {width: 70px;height: 70px;}
+.contact-name {font-size: 0.95rem;font-weight: bold;}
 }
 
 /* Mobile responsive (max-width: 768px) */
+
 @media (max-width: 768px) {
-    body {
-        padding: 10px;
-        height: 100vh;
-        overflow: hidden;
-    }
+body {padding: 10px;height: 100vh;overflow: hidden;}
+.container {max-width: 100%;height: 100%;display: flex;flex-direction: column;justify-content: space-between;}
+.header {gap: 10px;margin-bottom: 15px;}
+.header h1 {font-size: 1.3rem;}
+.city-logo {width: 50px;height: 50px;}
 
-    .container {
-        max-width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
+.priority-card {padding: 15px;margin-bottom: 15px;}
+.tap-text {font-size: 0.9rem;margin-bottom: 10px;}
+.priority-content {padding: 15px;}
+.priority-badge {font-size: 0.65rem;padding: 5px 10px;top: 8px;right: 8px;}
+.dial-number {font-size: 1.2rem;}
+.main-number {font-size: 2.5rem;margin: 10px 0;}
 
-    .header {
-        gap: 10px;
-        margin-bottom: 15px;
-    }
+/* Keep 2x2 grid on mobile */
+.contacts-grid {grid-template-columns: repeat(2, 1fr);gap: 10px;width: 100%;}
+.contact-card {padding: 12px;width: 100%;box-sizing: border-box;}
+.contact-header {gap: 8px;margin-bottom: 12px;}
+.contact-logo {width: 45px;height: 45px;}
+.contact-name {font-size: 0.7rem;line-height: 1.2;font-weight: bold;}
 
-    .header h1 {
-        font-size: 1.3rem;
-    }
+.button-group {gap: 6px;width: 100%;}
+.btn {font-size: 0.75rem;padding: 8px 6px;gap: 3px;flex-direction: column;width: 100%;min-width: 0;box-sizing: border-box;}
+.icon {font-size: 0.9rem;}
 
-    .city-logo {
-        width: 50px;
-        height: 50px;
-    }
-
-    .priority-card {
-        padding: 15px;
-        margin-bottom: 15px;
-    }
-
-    .tap-text {
-        font-size: 0.9rem;
-        margin-bottom: 10px;
-    }
-
-    .priority-content {
-        padding: 15px;
-    }
-
-    .priority-badge {
-        font-size: 0.65rem;
-        padding: 5px 10px;
-        top: 8px;
-        right: 8px;
-    }
-
-    .dial-number {
-        font-size: 1.2rem;
-    }
-
-    .main-number {
-        font-size: 2.5rem;
-        margin: 10px 0;
-    }
-
-    /* Keep 2x2 grid on mobile */
-    .contacts-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        width: 100%;
-    }
-
-    .contact-card {
-        padding: 12px;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .contact-header {
-        gap: 8px;
-        margin-bottom: 12px;
-    }
-
-    .contact-logo {
-        width: 45px;
-        height: 45px;
-    }
-
-    .contact-name {
-        font-size: 0.7rem;
-        line-height: 1.2;
-        font-weight: bold;
-    }
-
-    .button-group {
-        gap: 6px;
-        width: 100%;
-    }
-
-    .btn {
-        font-size: 0.75rem;
-        padding: 8px 6px;
-        gap: 3px;
-        flex-direction: column;
-        width: 100%;
-        min-width: 0;
-        box-sizing: border-box;
-    }
-
-    .icon {
-        font-size: 0.9rem;
-    }
-
-    .save-all-section {
-        margin-top: 15px;
-    }
-
-    .btn-save-all {
-        padding: 10px 30px;
-        font-size: 0.95rem;
-    }
-
-    .save-all-text {
-        font-size: 0.9rem;
-        margin-bottom: 10px;
-    }
+.save-all-section {margin-top: 15px;}
+.btn-save-all {padding: 10px 30px;font-size: 0.95rem;}
+.save-all-text {font-size: 0.9rem;margin-bottom: 10px;}
 }
 
 /* Small mobile (max-width: 480px) */
 @media (max-width: 480px) {
-    body {
-        padding: 8px;
-        height: 100vh;
-        overflow: hidden;
-    }
+body {padding: 8px;height: 100vh;overflow: hidden;}
+.container {height: 100%;display: flex;flex-direction: column;justify-content: space-between;}
 
-    .container {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
+.header {margin-bottom: 12px;}
+.header h1 {font-size: 1.1rem;}
+.city-logo {width: 40px;height: 40px;}
 
-    .header {
-        margin-bottom: 12px;
-    }
+.priority-card {padding: 12px;margin-bottom: 12px;}
+.tap-text {font-size: 0.8rem;margin-bottom: 8px;}
+.priority-content {padding: 12px;}
+.priority-badge {font-size: 0.6rem;padding: 4px 8px;}
+.dial-number {font-size: 1rem;}
+.main-number {font-size: 2rem;margin: 8px 0;}
 
-    .header h1 {
-        font-size: 1.1rem;
-    }
+.contacts-grid {gap: 8px;width: 100%;}
+.contact-card {padding: 10px;width: 100%;box-sizing: border-box;}
+.contact-header {gap: 6px;margin-bottom: 10px;}
+.contact-logo {width: 35px;height: 35px;}
+.contact-name {font-size: 0.65rem;line-height: 1.2;font-weight: bold;}
 
-    .city-logo {
-        width: 40px;
-        height: 40px;
-    }
-
-    .priority-card {
-        padding: 12px;
-        margin-bottom: 12px;
-    }
-
-    .tap-text {
-        font-size: 0.8rem;
-        margin-bottom: 8px;
-    }
-
-    .priority-content {
-        padding: 12px;
-    }
-
-    .priority-badge {
-        font-size: 0.6rem;
-        padding: 4px 8px;
-    }
-
-    .dial-number {
-        font-size: 1rem;
-    }
-
-    .main-number {
-        font-size: 2rem;
-        margin: 8px 0;
-    }
-
-    .contacts-grid {
-        gap: 8px;
-        width: 100%;
-    }
-
-    .contact-card {
-        padding: 10px;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .contact-header {
-        gap: 6px;
-        margin-bottom: 10px;
-    }
-
-    .contact-logo {
-        width: 35px;
-        height: 35px;
-    }
-
-    .contact-name {
-        font-size: 0.65rem;
-        line-height: 1.2;
-        font-weight: bold;
-    }
-
-    .button-group {
-        gap: 5px;
-        width: 100%;
-    }
-
-    .btn {
-        font-size: 0.65rem;
-        padding: 6px 4px;
-        gap: 2px;
-        width: 100%;
-        min-width: 0;
-        box-sizing: border-box;
-    }
-
-    .icon {
-        font-size: 0.8rem;
-    }
-
-    .save-all-section {
-        margin-top: 0px;
-    }
-
-    .btn-save-all {
-        padding: 8px 25px;
-        font-size: 0.85rem;
-    }
-
-    .save-all-text {
-        font-size: 0.8rem;
-        margin-bottom: 5px;
-    }
+.button-group {gap: 5px;width: 100%;}
+.btn {font-size: 0.65rem;padding: 6px 4px;gap: 2px;width: 100%;min-width: 0;box-sizing: border-box;}
+.icon {font-size: 0.8rem;}
+.save-all-section {margin-top: 0px;}
+.btn-save-all {padding: 8px 25px;font-size: 0.85rem;}
+.save-all-text {font-size: 0.8rem;margin-bottom: 5px;}
 }
 
 /* Landscape orientation adjustments */
 @media (max-height: 600px) and (orientation: landscape) {
-    body {
-        padding: 10px;
-        align-items: flex-start;
-    }
+body {padding: 10px;align-items: flex-start;}
+.container {margin: 10px 0;}
+.header {margin-bottom: 15px;}
 
-    .container {
-        margin: 10px 0;
-    }
+.priority-card {margin-bottom: 15px;}
 
-    .header {
-        margin-bottom: 15px;
-    }
+.contacts-grid {margin-bottom: 15px;}
 
-    .priority-card {
-        margin-bottom: 15px;
-    }
-
-    .contacts-grid {
-        margin-bottom: 15px;
-    }
-
-    .save-all-section {
-        margin-top: 5px;
-        margin-bottom: 5px;
-    }
+.save-all-section {margin-top: 5px;margin-bottom: 5px;}
 }

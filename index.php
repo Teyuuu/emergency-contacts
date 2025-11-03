@@ -4,7 +4,12 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 header('Expires: 0');
 
-require __DIR__ . '/contacts.php'; 
+// Security headers
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('X-XSS-Protection: 1; mode=block');
+
+require __DIR__ . '/includes/contacts.php'; 
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,23 +26,18 @@ require __DIR__ . '/contacts.php';
 			<h1>Emergency Contacts</h1>
 		</div>
 
-		<?php $sheetCount = is_array($contacts) ? count($contacts) : 0; ?>
-		<div class="save-all-section" style="margin-top:0;">
-			<div class="save-all-text" style="font-size:0.95rem;">
-				Loaded <?php echo (int)$sheetCount; ?> contact<?php echo $sheetCount===1?'':'s'; ?> from Google Sheet
-			</div>
-		</div>
-
-
 		<!-- Priority Emergency (first contact shown prominently) -->
 		<?php if (!empty($contacts)): $priority = $contacts[0]; ?>
 			<div class="contact-card priority-contact-card">
 				<div class="priority-emergency-badge">🚨 PRIORITY EMERGENCY</div>
 				<div class="contact-header">
-					<img src="<?php echo htmlspecialchars($priority['logo']); ?>" alt="Logo" class="contact-logo">
+					<img src="<?php echo htmlspecialchars($priority['logo']); ?>" alt="Logo" class="contact-logo" data-logo-src="<?php echo htmlspecialchars($priority['logo']); ?>" data-contact-name="<?php echo htmlspecialchars($priority['label']); ?>">
 					<div class="contact-info">
 						<div class="contact-name">
 							<?php echo htmlspecialchars($priority['label']); ?>
+						</div>
+						<div class="contact-number">
+							<?php echo htmlspecialchars($priority['number']); ?>
 						</div>
 					</div>
 				</div>
@@ -54,14 +54,17 @@ require __DIR__ . '/contacts.php';
 
 		<!-- Contact Cards Grid -->
 		<?php if (!empty($contacts)): ?>
-		<div class="contacts-grid priority-included">
+		<div class="contacts-grid">
 			<?php foreach (array_slice($contacts, 1) as $contact): ?>
 				<div class="contact-card">
 					<div class="contact-header">
-						<img src="<?php echo htmlspecialchars($contact['logo']); ?>" alt="Logo" class="contact-logo">
+						<img src="<?php echo htmlspecialchars($contact['logo']); ?>" alt="Logo" class="contact-logo" data-logo-src="<?php echo htmlspecialchars($contact['logo']); ?>" data-contact-name="<?php echo htmlspecialchars($contact['label']); ?>">
 						<div class="contact-info">
 							<div class="contact-name">
 								<?php echo htmlspecialchars($contact['label']); ?>
+							</div>
+							<div class="contact-number">
+								<?php echo htmlspecialchars($contact['number']); ?>
 							</div>
 						</div>
 					</div>
@@ -90,6 +93,24 @@ require __DIR__ . '/contacts.php';
 			</div>
 		<?php endif; ?>
 	</div>
+
+	<script>
+		// Auto-fallback to thumbnail URL if image fails to load
+		const logoImages = document.querySelectorAll('.contact-logo');
+		
+		logoImages.forEach((img) => {
+			img.addEventListener('error', function() {
+				// Try alternative thumbnail URL if original failed
+				const urlMatch = this.src.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+				if (urlMatch && urlMatch[1]) {
+					const fileId = urlMatch[1];
+					const thumbnailUrl = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w1000';
+					// Update the image source to thumbnail URL
+					img.src = thumbnailUrl;
+				}
+			});
+		});
+	</script>
 
 </body>
 </html>

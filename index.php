@@ -1,10 +1,23 @@
-<?php 
-// Prevent browser caching of this page to ensure fresh data
+<?php
 header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 header('Expires: 0');
 
-require_once __DIR__ . '/includes/contacts.php'; 
+if (session_status() === PHP_SESSION_NONE) {
+	session_start();
+}
+
+require_once __DIR__ . '/includes/contacts.php';
+
+$_SESSION['contact_store'] = [];
+$_SESSION['contact_store_time'] = time();
+$contactHashes = [];
+foreach ($contacts as $index => $contact) {
+	$hash = hash('sha256', $contact['name'] . '|' . $contact['number'] . '|' . $index);
+	$shortHash = substr($hash, 0, 16);
+	$_SESSION['contact_store'][$shortHash] = $contact;
+	$contactHashes[$index] = $shortHash;
+} 
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,8 +34,11 @@ require_once __DIR__ . '/includes/contacts.php';
 			<h1>Emergency Contacts</h1>
 		</div>
 
-		<!-- Priority Emergency (first contact shown prominently with number) -->
-		<?php if (!empty($contacts)): $priority = $contacts[0]; ?>
+		<!-- Priority Emergency -->
+		<?php if (!empty($contacts)): 
+			$priority = $contacts[0];
+			$priorityHash = $contactHashes[0];
+		?>
 			<div class="contact-card priority-contact-card">
 				<div class="priority-emergency-badge">🚨 PRIORITY EMERGENCY</div>
 				<div class="contact-header">
@@ -38,7 +54,6 @@ require_once __DIR__ . '/includes/contacts.php';
 				</div>
 				<div class="button-group">
 					<?php 
-					// Check if priority contact has alternative numbers
 					$priorityNumbers = explode(',', $priority['number']);
 					$priorityNumbers = array_map('trim', $priorityNumbers);
 					$priorityNumbers = array_filter($priorityNumbers);
@@ -54,18 +69,19 @@ require_once __DIR__ . '/includes/contacts.php';
 						</a>
 					<?php endif; ?>
 					
-					<a class="btn btn-save" href="download.php?type=single&amp;number=<?php echo rawurlencode($priority['number']); ?>&amp;name=<?php echo rawurlencode($priority['name']); ?>" role="button">
+					<a class="btn btn-save" href="download.php?type=single&amp;id=<?php echo htmlspecialchars($priorityHash); ?>" role="button">
 						<span class="icon">✓</span> Save
 					</a>
 				</div>
 			</div>
 		<?php endif; ?>
 
-		<!-- Contact Cards Grid (numbers hidden, only shown in modal) -->
+		<!-- Contact Cards Grid -->
 		<?php if (!empty($contacts)): ?>
 		<div class="contacts-grid priority-included">
-			<?php foreach (array_slice($contacts, 1) as $contact): 
-				// Parse alternative numbers
+			<?php foreach (array_slice($contacts, 1) as $offset => $contact): 
+				$contactIndex = $offset + 1;
+				$contactHash = $contactHashes[$contactIndex];
 				$numbers = explode(',', $contact['number']);
 				$numbers = array_map('trim', $numbers);
 				$numbers = array_filter($numbers);
@@ -94,7 +110,7 @@ require_once __DIR__ . '/includes/contacts.php';
 							</a>
 						<?php endif; ?>
 						
-						<a class="btn btn-save" href="download.php?type=single&amp;number=<?php echo rawurlencode($contact['number']); ?>&amp;name=<?php echo rawurlencode($contact['name']); ?>" role="button">
+						<a class="btn btn-save" href="download.php?type=single&amp;id=<?php echo htmlspecialchars($contactHash); ?>" role="button">
 							<span class="icon">✓</span> Save
 						</a>
 					</div>
@@ -129,7 +145,6 @@ require_once __DIR__ . '/includes/contacts.php';
 
 	<script>
 		function parseNumberWithLabel(numberString) {
-			// Split by | to separate number and label
 			const parts = numberString.split('|').map(s => s.trim());
 			return {
 				number: parts[0],
@@ -141,8 +156,6 @@ require_once __DIR__ . '/includes/contacts.php';
 			const modal = document.getElementById('numberModal');
 			const modalTitle = document.getElementById('modalTitle');
 			const modalNumberList = document.getElementById('modalNumberList');
-			
-			// Parse the numbers
 			let numbers;
 			try {
 				numbers = JSON.parse(numbersJson);
@@ -151,13 +164,9 @@ require_once __DIR__ . '/includes/contacts.php';
 				return;
 			}
 			
-			// Update modal title
 			modalTitle.textContent = contactName;
-			
-			// Clear previous numbers
 			modalNumberList.innerHTML = '';
 			
-			// Add each number to the modal
 			numbers.forEach((numberString, index) => {
 				const parsed = parseNumberWithLabel(numberString);
 				
@@ -166,7 +175,6 @@ require_once __DIR__ . '/includes/contacts.php';
 				
 				const label = document.createElement('div');
 				label.className = 'modal-number-label';
-				// Use custom label if provided, otherwise use default
 				if (parsed.label) {
 					label.textContent = parsed.label;
 				} else {
@@ -189,7 +197,6 @@ require_once __DIR__ . '/includes/contacts.php';
 				modalNumberList.appendChild(numberItem);
 			});
 			
-			// Show modal
 			modal.classList.add('active');
 			document.body.style.overflow = 'hidden';
 		}
@@ -200,14 +207,12 @@ require_once __DIR__ . '/includes/contacts.php';
 			document.body.style.overflow = '';
 		}
 		
-		// Close modal when clicking outside
 		document.getElementById('numberModal').addEventListener('click', function(e) {
 			if (e.target === this) {
 				closeModal();
 			}
 		});
 		
-		// Close modal with Escape key
 		document.addEventListener('keydown', function(e) {
 			if (e.key === 'Escape') {
 				closeModal();

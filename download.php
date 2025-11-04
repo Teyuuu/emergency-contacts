@@ -1,14 +1,16 @@
 <?php
-// Prevent any output before headers
 if (ob_get_level()) {
 	ob_clean();
+}
+
+if (session_status() === PHP_SESSION_NONE) {
+	session_start();
 }
 
 require_once __DIR__ . '/includes/security.php';
 require_once __DIR__ . '/includes/contacts.php';
 require_once __DIR__ . '/includes/functions.php';
 
-// Rate limiting - prevent abuse
 $clientIP = getClientIP();
 if (!checkRateLimit($clientIP, 30, 60)) {
 	http_response_code(429);
@@ -20,41 +22,59 @@ if (!checkRateLimit($clientIP, 30, 60)) {
 $type = isset($_GET['type']) ? strtolower(trim((string)$_GET['type'])) : '';
 
 if ($type === 'single') {
-	$number = isset($_GET['number']) ? trim((string)$_GET['number']) : '';
-	$name = isset($_GET['name']) ? trim((string)$_GET['name']) : '';
+	$contactId = isset($_GET['id']) ? trim((string)$_GET['id']) : '';
 
-	if ($number === '' || $name === '') {
+	if ($contactId === '') {
 		http_response_code(400);
-		echo 'Missing number or name.';
+		echo 'Missing contact ID.';
 		exit;
 	}
 
-	// Validate inputs
-	$nameValid = validateName($name);
+	if (!isset($_SESSION['contact_store'][$contactId])) {
+		http_response_code(404);
+		echo 'Contact not found. Please try again.';
+		exit;
+	}
+
+	if (isset($_SESSION['contact_store_time']) && (time() - $_SESSION['contact_store_time']) > 3600) {
+		unset($_SESSION['contact_store']);
+		unset($_SESSION['contact_store_time']);
+		http_response_code(410);
+		echo 'Session expired. Please refresh the page and try again.';
+		exit;
+	}
+
+	$contact = $_SESSION['contact_store'][$contactId];
+	$contactName = !empty($contact['label']) ? $contact['label'] : $contact['name'];
+	$number = $contact['number'];
+	$nameValid = validateName($contactName);
 	if ($nameValid === false) {
-		http_response_code(400);
-		echo 'Invalid name format.';
-		exit;
-	}
-
-	if (!validatePhoneNumber($number)) {
-		http_response_code(400);
-		echo 'Invalid phone number format.';
-		exit;
+		$contactName = $contact['name'];
+		$nameValid = validateName($contactName);
+		if ($nameValid === false) {
+			http_response_code(400);
+			echo 'Invalid name format.';
+			exit;
+		}
 	}
 
 	$nameSafe = sanitizeText($nameValid);
-	$numberSafe = sanitizeText($number);
 	
-	// Detect if number is landline (Philippine format: typically starts with specific area codes or has less digits)
-	// For better compatibility, we'll use WORK for longer numbers (likely landlines) and CELL for others
-	$numberType = (strlen(preg_replace('/[^0-9]/', '', $numberSafe)) >= 8 && strlen(preg_replace('/[^0-9]/', '', $numberSafe)) <= 10) ? 'WORK' : 'CELL';
+	$numberParts = explode(',', $number);
+	$numberParts = array_map('trim', $numberParts);
+	$numberParts = array_filter($numberParts);
 	
 	$vcard = "BEGIN:VCARD\r\n" .
 		"VERSION:3.0\r\n" .
-		"FN:" . $nameSafe . "\r\n" .
-		"TEL;TYPE=" . $numberType . ":" . $numberSafe . "\r\n" .
-		"END:VCARD\r\n";
+		"FN:" . $nameSafe . "\r\n";
+	
+	foreach ($numberParts as $numPart) {
+		$numberSafe = sanitizeText($numPart);
+		$numberType = (strlen(preg_replace('/[^0-9]/', '', $numberSafe)) >= 8 && strlen(preg_replace('/[^0-9]/', '', $numberSafe)) <= 10) ? 'WORK' : 'CELL';
+		$vcard .= "TEL;TYPE=" . $numberType . ":" . $numberSafe . "\r\n";
+	}
+	
+	$vcard .= "END:VCARD\r\n";
 
 	$filename = preg_replace('/[^A-Za-z0-9_\-]/', '_', str_replace(' ', '_', $nameSafe)) . '.vcf';
 	outputVCard($filename, $vcard);
@@ -68,22 +88,32 @@ if ($type === 'all') {
 	}
 	$all = '';
 	foreach ($contacts as $c) {
-		$nameSafe = sanitizeText($c['name']);
-		$numberSafe = sanitizeText($c['number']);
+		$contactName = !empty($c['label']) ? $c['label'] : $c['name'];
+		$nameValid = validateName($contactName);
+		if ($nameValid === false) {
+			$contactName = $c['name'];
+			$nameValid = validateName($contactName);
+		}
+		$nameSafe = $nameValid !== false ? sanitizeText($nameValid) : sanitizeText($contactName);
 		
-		// Detect if number is landline (Philippine format: typically starts with specific area codes or has less digits)
-		$numberType = (strlen(preg_replace('/[^0-9]/', '', $numberSafe)) >= 8 && strlen(preg_replace('/[^0-9]/', '', $numberSafe)) <= 10) ? 'WORK' : 'CELL';
+		$numberParts = explode(',', $c['number']);
+		$numberParts = array_map('trim', $numberParts);
+		$numberParts = array_filter($numberParts);
 		
 		$all .= "BEGIN:VCARD\r\n" .
 			"VERSION:3.0\r\n" .
-			"FN:" . $nameSafe . "\r\n" .
-			"TEL;TYPE=" . $numberType . ":" . $numberSafe . "\r\n" .
-			"END:VCARD\r\n";
+			"FN:" . $nameSafe . "\r\n";
+		
+		foreach ($numberParts as $numPart) {
+			$numberSafe = sanitizeText($numPart);
+			$numberType = (strlen(preg_replace('/[^0-9]/', '', $numberSafe)) >= 8 && strlen(preg_replace('/[^0-9]/', '', $numberSafe)) <= 10) ? 'WORK' : 'CELL';
+			$all .= "TEL;TYPE=" . $numberType . ":" . $numberSafe . "\r\n";
+		}
+		
+		$all .= "END:VCARD\r\n";
 	}
 	outputVCard('Emergency_Contacts_All.vcf', $all);
 }
 
 http_response_code(400);
 echo 'Invalid request.';
-
-

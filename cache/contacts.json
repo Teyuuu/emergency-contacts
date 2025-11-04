@@ -1,0 +1,44 @@
+[
+    {
+        "number": "161",
+        "name": "EMERGENCY",
+        "logo": "images\/emergency.jpg",
+        "label": "BACOOR EMERGENCY"
+    },
+    {
+        "number": "(046) 417-0727",
+        "name": "BDDRMO",
+        "logo": "images\/bdrrmo.png",
+        "label": "BACOOR DISASTER RISK REDUCTION AND MANAGEMENT OFFICE"
+    },
+    {
+        "number": "(046) 417-6366,0977-752-0819 | Globe,0998-598-5593 | Smart",
+        "name": "PNP",
+        "logo": "images\/pnp.png",
+        "label": "PHILIPPINE NATIONAL POLICE - BACOOR"
+    },
+    {
+        "number": "(046) 417-6060,0966-695-9711 | Central Fire Station,0966-938-2591| Molino Fire Sub-Station,0995-432-3594| San Nicolas Fire Sub-Station,0967-466-4890| Talaba Fire Sub-Station",
+        "name": "BFP",
+        "logo": "images\/bfp.png",
+        "label": "BEREAU OF FIRE PROTECTION - BACOOR"
+    },
+    {
+        "number": "(046) 481-4120",
+        "name": "CIO",
+        "logo": "images\/default.png",
+        "label": "CITY INFORMATION OFFICE"
+    },
+    {
+        "number": "(046) 417-0207,(046) 161,(046) 477-1041,(046) 417-1100,0977-752-0819 | Globe,0999-221-7882 | Smart",
+        "name": "Other Bacoor City Hotlines",
+        "logo": "images\/default.png",
+        "label": "OTHER BACOOR CITY HOTLINES"
+    },
+    {
+        "number": "911",
+        "name": "NATIONAL",
+        "logo": "images\/default.png",
+        "label": "NATIONAL"
+    }
+]

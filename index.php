@@ -24,7 +24,42 @@ foreach ($contacts as $index => $contact) {
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-	<title>Emergency Contacts</title>
+	<title>Emergency Contacts | City of Bacoor</title>
+
+	<!-- Favicon -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- SEO and Indexing -->
+	<meta name="robots" content="index, follow">
+	<meta name="googlebot" content="index, follow">
+	<meta name="author" content="Francis Cruz, Hershie Soscano, Timothy Villa, Alem de Castro">
+	<meta name="description" content="Access the official emergency contact numbers for Bacoor City. Call or save important hotlines for firefighters, police, BDRRMO, rescue units, and city services. Quick access to emergency services 24/7.">
+	<meta name="keywords" content="Bacoor emergency contacts, Bacoor hotline, LGU Bacoor, Bacoor rescue, Bacoor police, Bacoor fire protection, BDRRMO, emergency numbers Bacoor, Bacoor City emergency, Cavite emergency contacts">
+	
+	<!-- Open Graph (Facebook, Messenger, WhatsApp) -->
+	<meta property="og:type" content="website">
+	<meta property="og:site_name" content="City of Bacoor">
+	<meta property="og:title" content="Emergency Contacts | City of Bacoor">
+	<meta property="og:description" content="Quick access to Bacoor City emergency contacts — BDRRMO, police, fire protection, and more. Stay prepared and save lives.">
+	<meta property="og:image" content="https://yourdomain.com/images/bacoor-logo.jpg">
+	<meta property="og:image:alt" content="Bacoor City Logo">
+	<meta property="og:url" content="https://yourdomain.com/emergency-contacts">
+	<meta property="og:locale" content="en_PH">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Emergency Contacts | City of Bacoor">
+	<meta name="twitter:description" content="Official Bacoor City emergency hotlines. Call or save important numbers easily. Available 24/7.">
+	<meta name="twitter:image" content="https://yourdomain.com/images/bacoor-logo.jpg">
+	<meta name="twitter:image:alt" content="Bacoor City Logo">
+	
+	<!-- Additional SEO -->
+	<meta name="application-name" content="Bacoor Emergency Contacts">
+	<meta name="theme-color" content="#1e3a8a">
+	<link rel="canonical" href="https://yourdomain.com/emergency-contacts">
+
+	<!-- Stylesheet -->
 	<link rel="stylesheet" href="css/contact.css?<?php echo time(); ?>">
 </head>
 <body>

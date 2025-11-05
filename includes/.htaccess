@@ -1,4 +1,36 @@
-# Deny direct access to PHP files in includes directory
-Order Deny,Allow
-Deny from all
+# Allow access to download.php and fetch.php
+<Files "download.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
 
+<Files "fetch.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
+
+# Explicitly deny sensitive configuration files only
+<Files "config.php">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+<Files "security.php">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+<Files "contacts.php">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+<Files "sheets.php">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+<Files "functions.php">
+    Order Deny,Allow
+    Deny from all
+</Files>

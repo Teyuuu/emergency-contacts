@@ -48,3 +48,57 @@ function sanitizeText(string $text): string {
 	return $text;
 }
 
+// Clean phone number by removing carrier labels (Globe, Smart, etc.)
+// This ensures clean phone numbers for all devices (iOS, Android, etc.)
+// Carrier labels in phone numbers can cause issues when saving contacts
+function cleanPhoneNumber(string $number): string {
+	$number = trim($number);
+	
+	// If number contains pipe separator (format: number|label), extract only the number part
+	if (strpos($number, '|') !== false) {
+		$parts = explode('|', $number, 2);
+		$number = trim($parts[0]); // Take only the number part before the pipe
+	}
+	
+	// Remove common carrier labels (case-insensitive) from anywhere in the string
+	$carriers = ['Globe', 'Smart', 'Sun', 'TNT', 'TM', 'DITO', 'PLDT', 'GLOBE', 'SMART', 'SUN', 'TNT', 'TM', 'DITO', 'PLDT'];
+	foreach ($carriers as $carrier) {
+		// Remove carrier name at the end (with or without space)
+		$number = preg_replace('/\s*' . preg_quote($carrier, '/') . '\s*$/i', '', $number);
+		// Remove carrier name at the beginning
+		$number = preg_replace('/^\s*' . preg_quote($carrier, '/') . '\s*/i', '', $number);
+		// Remove carrier name anywhere in the string (in case it's embedded)
+		$number = preg_replace('/\s*' . preg_quote($carrier, '/') . '\s*/i', '', $number);
+	}
+	
+	// Remove any remaining non-digit characters except allowed formatting (spaces, hyphens, parentheses, plus)
+	// Keep only digits, spaces, hyphens, parentheses, and plus sign for phone formatting
+	$number = preg_replace('/[^\d\s\-\+\(\)]/', '', $number);
+	
+	// Clean up multiple spaces
+	$number = preg_replace('/\s+/', ' ', $number);
+	
+	return trim($number);
+}
+
+// Format name for vCard N field (vCard 3.0 standard - compatible with iOS, Android, and all devices)
+// vCard N format: N:LastName;FirstName;MiddleName;Prefix;Suffix
+// Both N: and FN: fields are included for maximum compatibility across all platforms
+function formatNameForVCard(string $fullName): string {
+	$fullName = trim($fullName);
+	if (empty($fullName)) {
+		return ';;;;';
+	}
+	
+	// Split name into parts (assuming format: FirstName LastName or just Name)
+	$parts = preg_split('/\s+/', $fullName, 2);
+	
+	if (count($parts) === 2) {
+		// Has first and last name: N:LastName;FirstName;MiddleName;Prefix;Suffix
+		return $parts[1] . ';' . $parts[0] . ';;;';
+	} else {
+		// Single name - put in last name field (iPhone prefers this)
+		return $fullName . ';;;;';
+	}
+}
+

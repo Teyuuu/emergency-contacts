@@ -70,17 +70,23 @@ if ($type === 'single') {
 	}
 
 	$nameSafe = sanitizeText($nameValid);
+	$nameNField = formatNameForVCard($nameSafe);
 	
 	$numberParts = explode(',', $number);
 	$numberParts = array_map('trim', $numberParts);
 	$numberParts = array_filter($numberParts);
 	
+	// vCard 3.0 format with both N: and FN: fields for maximum compatibility
+	// N: field is required by iOS, FN: field is used by Android (both are standard vCard 3.0)
 	$vcard = "BEGIN:VCARD\r\n" .
 		"VERSION:3.0\r\n" .
+		"N:" . $nameNField . "\r\n" .
 		"FN:" . $nameSafe . "\r\n";
 	
 	foreach ($numberParts as $numPart) {
-		$numberSafe = sanitizeText($numPart);
+		// Clean phone number to remove carrier labels (Globe, Smart, etc.)
+		$cleanedNumber = cleanPhoneNumber($numPart);
+		$numberSafe = sanitizeText($cleanedNumber);
 		$numberType = (strlen(preg_replace('/[^0-9]/', '', $numberSafe)) >= 8 && strlen(preg_replace('/[^0-9]/', '', $numberSafe)) <= 10) ? 'WORK' : 'CELL';
 		$vcard .= "TEL;TYPE=" . $numberType . ":" . $numberSafe . "\r\n";
 	}
@@ -106,17 +112,23 @@ if ($type === 'all') {
 			$nameValid = validateName($contactName);
 		}
 		$nameSafe = $nameValid !== false ? sanitizeText($nameValid) : sanitizeText($contactName);
+		$nameNField = formatNameForVCard($nameSafe);
 		
 		$numberParts = explode(',', $c['number']);
 		$numberParts = array_map('trim', $numberParts);
 		$numberParts = array_filter($numberParts);
 		
+		// vCard 3.0 format with both N: and FN: fields for maximum compatibility
+		// N: field is required by iOS, FN: field is used by Android (both are standard vCard 3.0)
 		$all .= "BEGIN:VCARD\r\n" .
 			"VERSION:3.0\r\n" .
+			"N:" . $nameNField . "\r\n" .
 			"FN:" . $nameSafe . "\r\n";
 		
 		foreach ($numberParts as $numPart) {
-			$numberSafe = sanitizeText($numPart);
+			// Clean phone number to remove carrier labels (Globe, Smart, etc.)
+			$cleanedNumber = cleanPhoneNumber($numPart);
+			$numberSafe = sanitizeText($cleanedNumber);
 			$numberType = (strlen(preg_replace('/[^0-9]/', '', $numberSafe)) >= 8 && strlen(preg_replace('/[^0-9]/', '', $numberSafe)) <= 10) ? 'WORK' : 'CELL';
 			$all .= "TEL;TYPE=" . $numberType . ":" . $numberSafe . "\r\n";
 		}

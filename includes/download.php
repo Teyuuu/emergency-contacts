@@ -4,12 +4,16 @@ if (ob_get_level()) {
 }
 
 if (session_status() === PHP_SESSION_NONE) {
+	// Configure secure session settings
+	ini_set('session.cookie_httponly', '1');
+	ini_set('session.cookie_samesite', 'Lax');
+	ini_set('session.use_strict_mode', '1');
 	session_start();
 }
 
-require_once __DIR__ . '/includes/security.php';
-require_once __DIR__ . '/includes/contacts.php';
-require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/security.php';
+require_once __DIR__ . '/contacts.php';
+require_once __DIR__ . '/functions.php';
 
 $clientIP = getClientIP();
 if (!checkRateLimit($clientIP, 30, 60)) {
@@ -27,6 +31,13 @@ if ($type === 'single') {
 	if ($contactId === '') {
 		http_response_code(400);
 		echo 'Missing contact ID.';
+		exit;
+	}
+
+	// Validate contact ID format (should be 16-character hex string from hash)
+	if (!preg_match('/^[a-f0-9]{16}$/i', $contactId) || strlen($contactId) !== 16) {
+		http_response_code(400);
+		echo 'Invalid contact ID format.';
 		exit;
 	}
 
@@ -117,3 +128,4 @@ if ($type === 'all') {
 
 http_response_code(400);
 echo 'Invalid request.';
+

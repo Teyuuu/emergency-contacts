@@ -4,7 +4,22 @@ header('Pragma: no-cache');
 header('Expires: 0');
 
 if (session_status() === PHP_SESSION_NONE) {
-	session_start();
+	// Configure secure session settings
+	ini_set('session.cookie_httponly', '1');
+	ini_set('session.cookie_samesite', 'Lax');
+	ini_set('session.use_strict_mode', '1');
+	
+	// Regenerate session ID periodically to prevent session fixation
+	if (isset($_SESSION['created'])) {
+		$sessionLifeTime = 3600; // 1 hour
+		if (time() - $_SESSION['created'] > $sessionLifeTime) {
+			session_regenerate_id(true);
+			$_SESSION['created'] = time();
+		}
+	} else {
+		session_start();
+		$_SESSION['created'] = time();
+	}
 }
 
 require_once __DIR__ . '/includes/contacts.php';
@@ -108,7 +123,7 @@ foreach ($contacts as $index => $contact) {
 						</a>
 					<?php endif; ?>
 					
-					<a class="btn btn-save" href="download.php?type=single&amp;id=<?php echo htmlspecialchars($priorityHash); ?>" role="button">
+					<a class="btn btn-save" href="includes/download.php?type=single&amp;id=<?php echo htmlspecialchars($priorityHash); ?>" role="button">
 						<span class="icon">✓</span> Save
 					</a>
 				</div>
@@ -149,7 +164,7 @@ foreach ($contacts as $index => $contact) {
 							</a>
 						<?php endif; ?>
 						
-						<a class="btn btn-save" href="download.php?type=single&amp;id=<?php echo htmlspecialchars($contactHash); ?>" role="button">
+						<a class="btn btn-save" href="includes/download.php?type=single&amp;id=<?php echo htmlspecialchars($contactHash); ?>" role="button">
 							<span class="icon">✓</span> Save
 						</a>
 					</div>
@@ -166,7 +181,7 @@ foreach ($contacts as $index => $contact) {
 		<?php if (!empty($contacts)): ?>
 			<div class="save-all-section">
 				<div class="save-all-text">Click if you want to</div>
-				<a class="btn-save-all" href="download.php?type=all" role="button">Save All Contacts</a>
+				<a class="btn-save-all" href="includes/download.php?type=all" role="button">Save All Contacts</a>
 			</div>
 		<?php endif; ?>
 	</div>
@@ -197,16 +212,35 @@ foreach ($contacts as $index => $contact) {
 			const modalNumberList = document.getElementById('modalNumberList');
 			let numbers;
 			try {
+				// Validate JSON before parsing to prevent JSON injection
+				if (typeof numbersJson !== 'string' || numbersJson.length > 5000) {
+					console.error('Invalid input data');
+					return;
+				}
 				numbers = JSON.parse(numbersJson);
+				// Validate that it's an array
+				if (!Array.isArray(numbers)) {
+					console.error('Invalid data format');
+					return;
+				}
+				// Limit array size to prevent DoS
+				if (numbers.length > 50) {
+					numbers = numbers.slice(0, 50);
+				}
 			} catch (e) {
 				console.error('Failed to parse numbers:', e);
 				return;
 			}
 			
-			modalTitle.textContent = contactName;
+			// Sanitize contact name (already escaped from PHP, but double-check)
+			modalTitle.textContent = contactName || 'Select Number';
 			modalNumberList.innerHTML = '';
 			
 			numbers.forEach((numberString, index) => {
+				if (typeof numberString !== 'string' || numberString.length > 100) {
+					return; // Skip invalid entries
+				}
+				
 				const parsed = parseNumberWithLabel(numberString);
 				
 				const numberItem = document.createElement('div');
@@ -215,18 +249,18 @@ foreach ($contacts as $index => $contact) {
 				const label = document.createElement('div');
 				label.className = 'modal-number-label';
 				if (parsed.label) {
-					label.textContent = parsed.label;
+					label.textContent = parsed.label.substring(0, 50); // Limit length
 				} else {
 					label.textContent = index === 0 ? 'Primary Number' : `Alternative ${index}`;
 				}
 				
 				const numberDisplay = document.createElement('div');
 				numberDisplay.className = 'modal-number-display';
-				numberDisplay.textContent = parsed.number;
+				numberDisplay.textContent = parsed.number.substring(0, 50); // Limit length
 				
 				const callBtn = document.createElement('a');
 				callBtn.className = 'modal-call-btn';
-				callBtn.href = 'tel:' + encodeURIComponent(parsed.number);
+				callBtn.href = 'tel:' + encodeURIComponent(parsed.number.substring(0, 50));
 				callBtn.innerHTML = '<span class="icon">☎</span> Call This Number';
 				
 				numberItem.appendChild(label);

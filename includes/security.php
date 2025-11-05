@@ -54,14 +54,23 @@ function checkRateLimit(string $identifier, int $maxRequests = 10, int $timeWind
     return $requests[$key] <= $maxRequests;
 }
 
-// Get client IP address
+// Get client IP address with improved security
 function getClientIP(): string {
     $ipKeys = ['HTTP_CF_CONNECTING_IP', 'HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR'];
     
     foreach ($ipKeys as $key) {
         if (array_key_exists($key, $_SERVER) === true) {
-            foreach (explode(',', $_SERVER[$key]) as $ip) {
+            $headerValue = $_SERVER[$key];
+            // Sanitize header value to prevent injection
+            $headerValue = preg_replace('/[^0-9a-fA-F:\.,\s]/', '', $headerValue);
+            
+            foreach (explode(',', $headerValue) as $ip) {
                 $ip = trim($ip);
+                // Remove port if present
+                if (strpos($ip, ':') !== false && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false) {
+                    $ip = strtok($ip, ':');
+                }
+                
                 if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
                     return $ip;
                 }
@@ -69,7 +78,13 @@ function getClientIP(): string {
         }
     }
     
-    return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    // Fallback to REMOTE_ADDR and sanitize
+    $remoteAddr = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    if (filter_var($remoteAddr, FILTER_VALIDATE_IP) !== false) {
+        return $remoteAddr;
+    }
+    
+    return '0.0.0.0';
 }
 
 // Validate Google Sheet URL format

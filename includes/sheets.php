@@ -215,19 +215,43 @@ function normalizeLogoPath(string $raw, string $defaultLogo = 'images/default-lo
 	
 	// If it's already a local path, validate and return it
 	if (strpos($raw, 'http') !== 0) {
+		// Decode URL encoding to catch bypass attempts
+		$raw = rawurldecode($raw);
 		// Clean the path
 		$raw = str_replace('\\', '/', $raw);
 		$raw = ltrim($raw, '/');
 		
-		// Security: prevent directory traversal
-		if (strpos($raw, '..') !== false) {
+		// Security: prevent directory traversal (check multiple encoding methods)
+		$normalized = strtolower($raw);
+		if (strpos($normalized, '..') !== false || 
+		    strpos($normalized, '%2e%2e') !== false ||
+		    strpos($normalized, '%2e.') !== false ||
+		    strpos($normalized, '.%2e') !== false ||
+		    preg_match('/\.\./', $raw) ||
+		    strpos($raw, chr(0)) !== false) { // Null byte injection
+			error_log("SECURITY: Directory traversal attempt detected in logo path: $raw");
 			return $defaultLogo;
 		}
 		
-		// Check if file exists in the project
-		$fullPath = __DIR__ . '/../' . $raw;
-		if (file_exists($fullPath)) {
-			return $raw;
+		// Additional validation: only allow alphanumeric, dots, slashes, hyphens, underscores
+		if (!preg_match('/^[a-zA-Z0-9_\-\.\/]+$/', $raw)) {
+			error_log("SECURITY: Invalid characters in logo path: $raw");
+			return $defaultLogo;
+		}
+		
+		// Resolve path and check if it's within project directory
+		$fullPath = realpath(__DIR__ . '/../' . $raw);
+		$basePath = realpath(__DIR__ . '/..');
+		
+		// Check if resolved path is within base directory (prevents directory traversal)
+		if ($fullPath === false || $basePath === false || strpos($fullPath, $basePath) !== 0) {
+			error_log("SECURITY: Logo path outside project directory: $raw");
+			return $defaultLogo;
+		}
+		
+		if (file_exists($fullPath) && is_file($fullPath)) {
+			// Return relative path from project root
+			return str_replace($basePath . DIRECTORY_SEPARATOR, '', $fullPath);
 		} else {
 			// File doesn't exist, return default
 			error_log("Logo file not found: $raw");

@@ -1,11 +1,11 @@
 <?php
 /**
  * Manual cache refresh endpoint
- * Usage: fetch.php?key={FETCH_KEY}
+ * Usage: includes/fetch.php?key={FETCH_KEY}
  */
 
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/sheets.php';
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/sheets.php';
 
 header('Content-Type: application/json');
 
@@ -83,10 +83,12 @@ try {
 	], JSON_PRETTY_PRINT);
 	
 } catch (Exception $e) {
+	// Log full error for debugging, but don't expose details to client
+	error_log('Cache refresh error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
 	http_response_code(500);
 	echo json_encode([
 		'success' => false,
-		'error' => 'Failed to refresh cache: ' . $e->getMessage()
+		'error' => 'Failed to refresh cache. Please try again later.'
 	]);
 }
 

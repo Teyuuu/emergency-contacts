@@ -3,6 +3,13 @@
 /**
  * Configuration - Set your Google Sheet published CSV URL
  */
+
+define('SITE_URL',  'http://localhost/emergency-contacts/');
+define('VERSION', '1.2');
+
+/**
+ * Configuration - Set your Google Sheet published CSV URL
+ */
 $GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ8TWW6KM_rKOMdl15PmHBhqOIrfOO-SfKUTGOeigwfzFpqsaSIGhbiIiF_stxyM4IT1WfBxdIIkPaO/pub?gid=0&single=true&output=csv';
 
 if (!empty($GOOGLE_SHEET_CSV_URL)) {

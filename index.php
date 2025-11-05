@@ -18,6 +18,9 @@ foreach ($contacts as $index => $contact) {
 	$_SESSION['contact_store'][$shortHash] = $contact;
 	$contactHashes[$index] = $shortHash;
 } 
+
+echo 'here';
+die();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -27,13 +30,13 @@ foreach ($contacts as $index => $contact) {
 	<title>Emergency Contacts | City of Bacoor</title>
 
 	<!-- Favicon -->
-	<link rel="icon" type="image/x-icon" href="favicon.ico">
-	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-	
+	<link rel="icon" type="image/x-icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/favicon.ico">
+
 	<!-- SEO and Indexing -->
 	<meta name="robots" content="index, follow">
 	<meta name="googlebot" content="index, follow">
-	<meta name="author" content="Francis Cruz, Hershie Soscano, Timothy Villa, Alem de Castro">
+	<meta name="author" content="E-GOV Department Office">
 	<meta name="description" content="Access the official emergency contact numbers for Bacoor City. Call or save important hotlines for firefighters, police, BDRRMO, rescue units, and city services. Quick access to emergency services 24/7.">
 	<meta name="keywords" content="Bacoor emergency contacts, Bacoor hotline, LGU Bacoor, Bacoor rescue, Bacoor police, Bacoor fire protection, BDRRMO, emergency numbers Bacoor, Bacoor City emergency, Cavite emergency contacts">
 	
@@ -42,31 +45,33 @@ foreach ($contacts as $index => $contact) {
 	<meta property="og:site_name" content="City of Bacoor">
 	<meta property="og:title" content="Emergency Contacts | City of Bacoor">
 	<meta property="og:description" content="Quick access to Bacoor City emergency contacts — BDRRMO, police, fire protection, and more. Stay prepared and save lives.">
-	<meta property="og:image" content="https://yourdomain.com/images/bacoor-logo.jpg">
+	<meta property="og:image" content="<?= SITE_URL ?>images/bacoor-logo.jpg">
 	<meta property="og:image:alt" content="Bacoor City Logo">
-	<meta property="og:url" content="https://yourdomain.com/emergency-contacts">
+	<meta property="og:url" content="<?= SITE_URL ?>emergency-contacts">
 	<meta property="og:locale" content="en_PH">
 
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image">
 	<meta name="twitter:title" content="Emergency Contacts | City of Bacoor">
 	<meta name="twitter:description" content="Official Bacoor City emergency hotlines. Call or save important numbers easily. Available 24/7.">
-	<meta name="twitter:image" content="https://yourdomain.com/images/bacoor-logo.jpg">
+	<meta name="twitter:image" content="<?= SITE_URL ?>images/bacoor-logo.jpg">
 	<meta name="twitter:image:alt" content="Bacoor City Logo">
 	
 	<!-- Additional SEO -->
 	<meta name="application-name" content="Bacoor Emergency Contacts">
 	<meta name="theme-color" content="#1e3a8a">
-	<link rel="canonical" href="https://yourdomain.com/emergency-contacts">
+	<link rel="canonical" href="<?= SITE_URL ?>emergency-contacts">
 
 	<!-- Stylesheet -->
-	<link rel="stylesheet" href="css/contact.css?<?php echo time(); ?>">
+	<link href="https://fonts.googleapis.com/css?family=Rubik:300,400,500,600%7CIBM+Plex+Sans:300,400,500,600,700" rel="stylesheet">
+	<link rel="stylesheet" href="css/contact.css?<?= VERSION ?>">
 </head>
 <body>
 	<div class="container">
 		<div class="header">
 			<img src="images/bacoor-logo.jpg" alt="Bacoor Logo" class="city-logo">
 			<h1>Emergency Contacts</h1>
+			<small>E-GOV Department Office</small>
 		</div>
 
 		<!-- Priority Emergency -->

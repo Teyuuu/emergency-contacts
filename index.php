@@ -41,7 +41,7 @@ foreach ($contacts as $index => $contact) {
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-	<title>Emergency Contacts | City of Bacoor</title>
+	<title>Emergency Hotlines | City of Bacoor</title>
 
 	<!-- Favicon -->
 	<link rel="icon" type="image/x-icon" href="images/favicon.ico">
@@ -52,29 +52,29 @@ foreach ($contacts as $index => $contact) {
 	<meta name="googlebot" content="index, follow">
 	<meta name="author" content="E-GOV Department Office">
 	<meta name="description" content="Access the official emergency contact numbers for Bacoor City. Call or save important hotlines for firefighters, police, BDRRMO, rescue units, and city services. Quick access to emergency services 24/7.">
-	<meta name="keywords" content="Bacoor emergency contacts, Bacoor hotline, LGU Bacoor, Bacoor rescue, Bacoor police, Bacoor fire protection, BDRRMO, emergency numbers Bacoor, Bacoor City emergency, Cavite emergency contacts">
+	<meta name="keywords" content="Bacoor emergency Hotlines, Bacoor hotline, LGU Bacoor, Bacoor rescue, Bacoor police, Bacoor fire protection, BDRRMO, emergency numbers Bacoor, Bacoor City emergency, Cavite emergency contacts">
 	
 	<!-- Open Graph (Facebook, Messenger, WhatsApp) -->
 	<meta property="og:type" content="website">
 	<meta property="og:site_name" content="City of Bacoor">
-	<meta property="og:title" content="Emergency Contacts | City of Bacoor">
-	<meta property="og:description" content="Quick access to Bacoor City emergency contacts — BDRRMO, police, fire protection, and more. Stay prepared and save lives.">
+	<meta property="og:title" content="Emergency Hotlines | City of Bacoor">
+	<meta property="og:description" content="Quick access to Bacoor City emergency Hotlines — BDRRMO, police, fire protection, and more. Stay prepared and save lives.">
 	<meta property="og:image" content="<?= SITE_URL ?>images/bacoor-logo.jpg">
 	<meta property="og:image:alt" content="Bacoor City Logo">
-	<meta property="og:url" content="<?= SITE_URL ?>emergency-contacts">
+	<meta property="og:url" content="<?= SITE_URL ?>">
 	<meta property="og:locale" content="en_PH">
 
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image">
-	<meta name="twitter:title" content="Emergency Contacts | City of Bacoor">
+	<meta name="twitter:title" content="Emergency Hotlines | City of Bacoor">
 	<meta name="twitter:description" content="Official Bacoor City emergency hotlines. Call or save important numbers easily. Available 24/7.">
 	<meta name="twitter:image" content="<?= SITE_URL ?>images/bacoor-logo.jpg">
 	<meta name="twitter:image:alt" content="Bacoor City Logo">
 	
 	<!-- Additional SEO -->
-	<meta name="application-name" content="Bacoor Emergency Contacts">
+	<meta name="application-name" content="Bacoor Emergency Hotlines">
 	<meta name="theme-color" content="#1e3a8a">
-	<link rel="canonical" href="<?= SITE_URL ?>emergency-contacts">
+	<link rel="canonical" href="<?= SITE_URL ?>">
 
 	<!-- Stylesheet -->
 	<link href="https://fonts.googleapis.com/css?family=Rubik:300,400,500,600%7CIBM+Plex+Sans:300,400,500,600,700" rel="stylesheet">
@@ -83,8 +83,8 @@ foreach ($contacts as $index => $contact) {
 <body>
 	<div class="container">
 		<div class="header">
-			<img src="images/bacoor-logo.jpg" alt="Bacoor Logo" class="city-logo">
-			<h1>Emergency Contacts</h1>
+			<img src="images/logo-125.png" alt="Bacoor Logo" class="city-logo">
+			<h1>Emergency Hotlines</h1>
 			<small>E-GOV Department Office</small>
 		</div>
 
@@ -115,16 +115,16 @@ foreach ($contacts as $index => $contact) {
 					if (count($priorityNumbers) > 1): 
 					?>
 						<button class="btn btn-call" onclick="openModal('<?php echo htmlspecialchars(json_encode($priorityNumbers), ENT_QUOTES); ?>', '<?php echo htmlspecialchars($priority['name'], ENT_QUOTES); ?>')">
-							<span class="icon">☎</span> Call
+							Call
 						</button>
 					<?php else: ?>
 						<a class="btn btn-call" href="tel:<?php echo rawurlencode($priorityNumbers[0]); ?>" role="button">
-							<span class="icon">☎</span> Call
+							Call
 						</a>
 					<?php endif; ?>
 					
 					<a class="btn btn-save" href="includes/download.php?type=single&amp;id=<?php echo htmlspecialchars($priorityHash); ?>" role="button">
-						<span class="icon">✓</span> Save
+						Save
 					</a>
 				</div>
 			</div>
@@ -156,16 +156,16 @@ foreach ($contacts as $index => $contact) {
 					<div class="button-group">
 						<?php if ($hasAlternatives): ?>
 							<button class="btn btn-call" onclick="openModal('<?php echo htmlspecialchars(json_encode($numbers), ENT_QUOTES); ?>', '<?php echo htmlspecialchars($contact['name'], ENT_QUOTES); ?>')">
-								<span class="icon">☎</span> Call
+							Call
 							</button>
 						<?php else: ?>
 							<a class="btn btn-call" href="tel:<?php echo rawurlencode($numbers[0]); ?>" role="button">
-								<span class="icon">☎</span> Call
+								Call
 							</a>
 						<?php endif; ?>
 						
 						<a class="btn btn-save" href="includes/download.php?type=single&amp;id=<?php echo htmlspecialchars($contactHash); ?>" role="button">
-							<span class="icon">✓</span> Save
+							Save
 						</a>
 					</div>
 				</div>
@@ -261,7 +261,7 @@ foreach ($contacts as $index => $contact) {
 				const callBtn = document.createElement('a');
 				callBtn.className = 'modal-call-btn';
 				callBtn.href = 'tel:' + encodeURIComponent(parsed.number.substring(0, 50));
-				callBtn.innerHTML = '<span class="icon">☎</span> Call This Number';
+				callBtn.innerHTML = 'Call This Number';
 				
 				numberItem.appendChild(label);
 				numberItem.appendChild(numberDisplay);

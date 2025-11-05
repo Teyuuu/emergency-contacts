@@ -48,9 +48,8 @@ function sanitizeText(string $text): string {
 	return $text;
 }
 
-// Clean phone number by removing carrier labels (Globe, Smart, etc.)
+// Clean phone number by removing carrier labels
 // This ensures clean phone numbers for all devices (iOS, Android, etc.)
-// Carrier labels in phone numbers can cause issues when saving contacts
 function cleanPhoneNumber(string $number): string {
 	$number = trim($number);
 	
@@ -71,12 +70,26 @@ function cleanPhoneNumber(string $number): string {
 		$number = preg_replace('/\s*' . preg_quote($carrier, '/') . '\s*/i', '', $number);
 	}
 	
-	// Remove any remaining non-digit characters except allowed formatting (spaces, hyphens, parentheses, plus)
-	// Keep only digits, spaces, hyphens, parentheses, and plus sign for phone formatting
-	$number = preg_replace('/[^\d\s\-\+\(\)]/', '', $number);
+	// Remove parentheses - they should not be in phone numbers
+	$number = str_replace(['(', ')'], '', $number);
 	
-	// Clean up multiple spaces
-	$number = preg_replace('/\s+/', ' ', $number);
+	// Remove any remaining non-digit characters except allowed formatting (spaces, hyphens, plus)
+	// Keep only digits, spaces, hyphens, and plus sign for phone formatting
+	$number = preg_replace('/[^\d\s\-\+]/', '', $number);
+	
+	// Extract only digits to count and format properly
+	$digitsOnly = preg_replace('/[^\d]/', '', $number);
+	$digitCount = strlen($digitsOnly);
+	
+	// Format 12-digit numbers as "0977 752 0819" (no parentheses)
+	if ($digitCount === 12) {
+		// Format: XXXX XXX XXXX (first 4 digits, space, next 3 digits, space, last 4 digits)
+		$number = substr($digitsOnly, 0, 4) . ' ' . substr($digitsOnly, 4, 3) . ' ' . substr($digitsOnly, 7, 4);
+	} else {
+		// For other lengths, clean up multiple spaces
+		$number = preg_replace('/\s+/', ' ', $number);
+		$number = trim($number);
+	}
 	
 	return trim($number);
 }

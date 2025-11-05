@@ -80,8 +80,10 @@ function saveContactsToCache(array $contacts, string $dataHash): bool {
 
 /**
  * Check if cache needs to be refreshed by comparing data hash
+ * Only checks hash when explicitly requested (manual refresh)
+ * This avoids unnecessary Google Sheets API calls
  */
-function shouldRefreshCache(string $csvUrl): bool {
+function shouldRefreshCache(string $csvUrl, bool $checkHash = false): bool {
 	if (!file_exists(CACHE_META_FILE)) {
 		return true;
 	}
@@ -91,9 +93,10 @@ function shouldRefreshCache(string $csvUrl): bool {
 		return true;
 	}
 	
-	$cacheAge = time() - $meta['timestamp'];
-	if ($cacheAge < CACHE_CHECK_INTERVAL) {
-		return false;
+	// Only check hash if explicitly requested (manual refresh via fetch.php)
+	// Otherwise, rely on cache indefinitely to avoid wasting Google Sheets API calls
+	if (!$checkHash) {
+		return false; // Cache exists, no need to refresh
 	}
 	
 	$baseUrl = getBaseGoogleSheetUrl($csvUrl);
@@ -102,7 +105,7 @@ function shouldRefreshCache(string $csvUrl): bool {
 	
 	$currentHash = getGoogleSheetDataHash($checkUrl);
 	if ($currentHash === false) {
-		return false;
+		return false; // If hash check fails, keep using cache
 	}
 	
 	return !isset($meta['data_hash']) || $meta['data_hash'] !== $currentHash;
@@ -237,173 +240,169 @@ function normalizeLogoPath(string $raw, string $defaultLogo = 'images/default-lo
 	return $defaultLogo;
 }
 
-function loadContactsFromGoogleSheet(string $csvUrl): array {
+function loadContactsFromGoogleSheet(string $csvUrl, bool $forceRefresh = false): array {
 	$originalUrl = trim($csvUrl);
 	if ($originalUrl === '') {
 		return [];
 	}
 	
-	// Try to load from cache first
-	$cachedContacts = loadContactsFromCache();
-	
-	if ($cachedContacts !== null) {
-		$meta = @json_decode(file_get_contents(CACHE_META_FILE), true);
-		if ($meta && isset($meta['timestamp'])) {
-			$cacheAge = time() - $meta['timestamp'];
-			if ($cacheAge < 30) {
-				return $cachedContacts;
-			}
+	// Try to load from cache first (unless forcing refresh)
+	$cachedContacts = null;
+	if (!$forceRefresh) {
+		$cachedContacts = loadContactsFromCache();
+		
+		// If cache exists, use it indefinitely - no time-based expiration
+		// This avoids unnecessary Google Sheets API calls and delays
+		if ($cachedContacts !== null) {
+			return $cachedContacts;
 		}
 	}
 	
-	if ($cachedContacts === null || shouldRefreshCache($originalUrl)) {
-		$csvUrl = normalizeGoogleSheetUrl($originalUrl);
-		if ($csvUrl === '') {
-			if ($cachedContacts !== null) {
-				return $cachedContacts;
-			}
-			return [];
+	// Fetch from Google Sheets only if cache doesn't exist or force refresh is requested
+	$csvUrl = normalizeGoogleSheetUrl($originalUrl);
+	if ($csvUrl === '') {
+		if ($cachedContacts !== null) {
+			return $cachedContacts;
 		}
+		return [];
+	}
 
-		$data = '';
+	$data = '';
+	if (function_exists('curl_init')) {
+		$ch = curl_init($csvUrl);
+		$curlOptions = [
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_CONNECTTIMEOUT => 5,
+			CURLOPT_TIMEOUT => 8,
+			CURLOPT_USERAGENT => 'EmergencyContacts/1.0',
+			CURLOPT_HTTPHEADER => [
+				'Accept: text/csv, */*;q=0.8',
+				'Cache-Control: no-cache',
+				'Pragma: no-cache',
+			],
+		];
+		$serverName = isset($_SERVER['SERVER_NAME']) ? strtolower((string)$_SERVER['SERVER_NAME']) : '';
+		if ($serverName === 'localhost' || $serverName === '127.0.0.1') {
+			$curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
+			$curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
+		}
+		curl_setopt_array($ch, $curlOptions);
+		$data = (string)curl_exec($ch);
+		curl_close($ch);
+	} else {
+		$context = stream_context_create([
+			'http' => [
+				'timeout' => 8,
+				'ignore_errors' => true,
+			],
+		]);
+		$data = @file_get_contents($csvUrl, false, $context) ?: '';
+	}
+	if ($data === false || $data === '') {
+		if ($cachedContacts !== null) {
+			return $cachedContacts;
+		}
+		return [];
+	}
+
+	$snippet = substr(ltrim($data), 0, 200);
+	if (stripos($snippet, '<!DOCTYPE html') !== false || stripos($snippet, '<html') !== false) {
+		$retryUrl = $csvUrl . ((strpos($csvUrl, '?') !== false) ? '&' : '?') . 'r=' . mt_rand();
 		if (function_exists('curl_init')) {
-			$ch = curl_init($csvUrl);
-			$curlOptions = [
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_FOLLOWLOCATION => true,
-				CURLOPT_CONNECTTIMEOUT => 5,
-				CURLOPT_TIMEOUT => 8,
-				CURLOPT_USERAGENT => 'EmergencyContacts/1.0',
-				CURLOPT_HTTPHEADER => [
-					'Accept: text/csv, */*;q=0.8',
-					'Cache-Control: no-cache',
-					'Pragma: no-cache',
-				],
-			];
-			$serverName = isset($_SERVER['SERVER_NAME']) ? strtolower((string)$_SERVER['SERVER_NAME']) : '';
-			if ($serverName === 'localhost' || $serverName === '127.0.0.1') {
-				$curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
-				$curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
-			}
+			$ch = curl_init($retryUrl);
 			curl_setopt_array($ch, $curlOptions);
 			$data = (string)curl_exec($ch);
 			curl_close($ch);
 		} else {
-			$context = stream_context_create([
-				'http' => [
-					'timeout' => 8,
-					'ignore_errors' => true,
-				],
-			]);
-			$data = @file_get_contents($csvUrl, false, $context) ?: '';
+			$context = stream_context_create(['http' => ['timeout' => 8, 'ignore_errors' => true]]);
+			$data = @file_get_contents($retryUrl, false, $context) ?: '';
 		}
-		if ($data === false || $data === '') {
+		$snippet = substr(ltrim((string)$data), 0, 200);
+		if ($data === '' || stripos($snippet, '<html') !== false) {
 			if ($cachedContacts !== null) {
 				return $cachedContacts;
 			}
 			return [];
 		}
-
-		$snippet = substr(ltrim($data), 0, 200);
-		if (stripos($snippet, '<!DOCTYPE html') !== false || stripos($snippet, '<html') !== false) {
-			$retryUrl = $csvUrl . ((strpos($csvUrl, '?') !== false) ? '&' : '?') . 'r=' . mt_rand();
-			if (function_exists('curl_init')) {
-				$ch = curl_init($retryUrl);
-				curl_setopt_array($ch, $curlOptions);
-				$data = (string)curl_exec($ch);
-				curl_close($ch);
-			} else {
-				$context = stream_context_create(['http' => ['timeout' => 8, 'ignore_errors' => true]]);
-				$data = @file_get_contents($retryUrl, false, $context) ?: '';
-			}
-			$snippet = substr(ltrim((string)$data), 0, 200);
-			if ($data === '' || stripos($snippet, '<html') !== false) {
-				if ($cachedContacts !== null) {
-					return $cachedContacts;
-				}
-				return [];
-			}
-		}
-
-		$rawDataHash = hash('sha256', $data);
-
-		$lines = preg_split("/\r\n|\r|\n/", $data);
-		if (!$lines || count($lines) === 0) {
-			return [];
-		}
-
-		$rows = [];
-		foreach ($lines as $line) {
-			if ($line === '') continue;
-			$rows[] = str_getcsv($line);
-		}
-		if (count($rows) < 2) {
-			$flat = str_getcsv($data);
-			if ($flat && count($flat) >= 5) {
-				$header = array_slice($flat, 0, 5);
-				$rows = [$header];
-				for ($i = 5; $i < count($flat); $i += 5) {
-					$rows[] = array_slice($flat, $i, 5);
-				}
-			} else {
-				return [];
-			}
-		}
-
-		$header = array_map('trim', $rows[0]);
-		if (isset($header[0])) {
-			$header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
-		}
-		$contacts = [];
-		for ($i = 1; $i < count($rows); $i++) {
-			$row = $rows[$i];
-			if (count($row) === 1 && trim($row[0]) === '') continue;
-			$assoc = [];
-			foreach ($header as $idx => $key) {
-				$assoc[strtolower($key)] = isset($row[$idx]) ? trim($row[$idx]) : '';
-			}
-			$name = $assoc['name'] ?? '';
-			$number = $assoc['number'] ?? '';
-			$logoRaw = $assoc['logo file'] ?? ($assoc['logo'] ?? '');
-			$logo = normalizeLogoPath($logoRaw);
-			$label = $assoc['label'] ?? '';
-			
-			if ($name === '' || $number === '') continue;
-			
-			$numberParts = explode(',', $number);
-			$cleanedNumbers = [];
-			foreach ($numberParts as $numPart) {
-				$numPart = trim($numPart);
-				if ($numPart !== '') {
-					$cleanedNumbers[] = $numPart;
-				}
-			}
-			
-			if (empty($cleanedNumbers)) {
-				error_log("Skipping contact '{$name}' - no phone numbers found");
-				continue;
-			}
-			
-			$finalNumber = implode(',', $cleanedNumbers);
-			
-			$contacts[] = [
-				'number' => $finalNumber,
-				'name' => $name,
-				'logo' => $logo,
-				'label' => $label !== '' ? $label : $name,
-			];
-		}
-
-		if (!$contacts) {
-			if ($cachedContacts !== null) {
-				return $cachedContacts;
-			}
-			return [];
-		}
-
-		saveContactsToCache($contacts, $rawDataHash);
-		return $contacts;
 	}
-	
-	return $cachedContacts;
+
+	$rawDataHash = hash('sha256', $data);
+
+	$lines = preg_split("/\r\n|\r|\n/", $data);
+	if (!$lines || count($lines) === 0) {
+		return [];
+	}
+
+	$rows = [];
+	foreach ($lines as $line) {
+		if ($line === '') continue;
+		$rows[] = str_getcsv($line);
+	}
+	if (count($rows) < 2) {
+		$flat = str_getcsv($data);
+		if ($flat && count($flat) >= 5) {
+			$header = array_slice($flat, 0, 5);
+			$rows = [$header];
+			for ($i = 5; $i < count($flat); $i += 5) {
+				$rows[] = array_slice($flat, $i, 5);
+			}
+		} else {
+			return [];
+		}
+	}
+
+	$header = array_map('trim', $rows[0]);
+	if (isset($header[0])) {
+		$header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
+	}
+	$contacts = [];
+	for ($i = 1; $i < count($rows); $i++) {
+		$row = $rows[$i];
+		if (count($row) === 1 && trim($row[0]) === '') continue;
+		$assoc = [];
+		foreach ($header as $idx => $key) {
+			$assoc[strtolower($key)] = isset($row[$idx]) ? trim($row[$idx]) : '';
+		}
+		$name = $assoc['name'] ?? '';
+		$number = $assoc['number'] ?? '';
+		$logoRaw = $assoc['logo file'] ?? ($assoc['logo'] ?? '');
+		$logo = normalizeLogoPath($logoRaw);
+		$label = $assoc['label'] ?? '';
+		
+		if ($name === '' || $number === '') continue;
+		
+		$numberParts = explode(',', $number);
+		$cleanedNumbers = [];
+		foreach ($numberParts as $numPart) {
+			$numPart = trim($numPart);
+			if ($numPart !== '') {
+				$cleanedNumbers[] = $numPart;
+			}
+		}
+		
+		if (empty($cleanedNumbers)) {
+			error_log("Skipping contact '{$name}' - no phone numbers found");
+			continue;
+		}
+		
+		$finalNumber = implode(',', $cleanedNumbers);
+		
+		$contacts[] = [
+			'number' => $finalNumber,
+			'name' => $name,
+			'logo' => $logo,
+			'label' => $label !== '' ? $label : $name,
+		];
+	}
+
+	if (!$contacts) {
+		if ($cachedContacts !== null) {
+			return $cachedContacts;
+		}
+		return [];
+	}
+
+	saveContactsToCache($contacts, $rawDataHash);
+	return $contacts;
 }

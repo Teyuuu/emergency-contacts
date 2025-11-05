@@ -19,8 +19,7 @@ foreach ($contacts as $index => $contact) {
 	$contactHashes[$index] = $shortHash;
 } 
 
-echo 'here';
-die();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

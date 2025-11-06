@@ -34,7 +34,6 @@ if ($type === 'single') {
 		exit;
 	}
 
-	// Validate contact ID format (should be 16-character hex string from hash)
 	if (!preg_match('/^[a-f0-9]{16}$/i', $contactId) || strlen($contactId) !== 16) {
 		http_response_code(400);
 		echo 'Invalid contact ID format.';
@@ -76,8 +75,6 @@ if ($type === 'single') {
 	$numberParts = array_map('trim', $numberParts);
 	$numberParts = array_filter($numberParts);
 	
-	// vCard 3.0 format with both N: and FN: fields for maximum compatibility
-	// N: field is required by iOS, FN: field is used by Android (both are standard vCard 3.0)
 	$vcard = "BEGIN:VCARD\r\n" .
 		"VERSION:3.0\r\n" .
 		"N:" . $nameNField . "\r\n" .
@@ -103,39 +100,151 @@ if ($type === 'all') {
 		echo 'No contacts available.';
 		exit;
 	}
-	$all = '';
-	foreach ($contacts as $c) {
-		$contactName = !empty($c['label']) ? $c['label'] : $c['name'];
-		$nameValid = validateName($contactName);
-		if ($nameValid === false) {
-			$contactName = $c['name'];
-			$nameValid = validateName($contactName);
+	
+	// Find BACOOR EMERGENCY contact (first contact by default)
+	$bacoorEmergency = null;
+	$bacoorEmergencyIndex = -1;
+	
+	foreach ($contacts as $index => $c) {
+		$nameUpper = strtoupper(trim($c['name'] ?? ''));
+		$labelUpper = strtoupper(trim($c['label'] ?? ''));
+		
+		// Find BACOOR EMERGENCY contact
+		if ($bacoorEmergency === null && (
+			$nameUpper === 'BACOOR EMERGENCY' || 
+			$nameUpper === 'EMERGENCY' ||
+			$labelUpper === 'BACOOR EMERGENCY' ||
+			strpos($nameUpper, 'BACOOR EMERGENCY') !== false ||
+			strpos($labelUpper, 'BACOOR EMERGENCY') !== false
+		)) {
+			$bacoorEmergency = $c;
+			$bacoorEmergencyIndex = $index;
+			break;
 		}
-		$nameSafe = $nameValid !== false ? sanitizeText($nameValid) : sanitizeText($contactName);
-		$nameNField = formatNameForVCard($nameSafe);
+	}
+	
+	// If BACOOR EMERGENCY not found, use first contact
+	if ($bacoorEmergency === null && !empty($contacts)) {
+		$bacoorEmergency = $contacts[0];
+		$bacoorEmergencyIndex = 0;
+	}
+	
+	if ($bacoorEmergency === null || empty($bacoorEmergency['name'])) {
+		http_response_code(404);
+		echo 'BACOOR EMERGENCY contact not found.';
+		exit;
+	}
+	
+	// Get BACOOR EMERGENCY contact details
+	$contactName = !empty($bacoorEmergency['label']) ? $bacoorEmergency['label'] : $bacoorEmergency['name'];
+	$nameValid = validateName($contactName);
+	if ($nameValid === false) {
+		$contactName = $bacoorEmergency['name'];
+		$nameValid = validateName($contactName);
+	}
+	
+	if ($nameValid === false) {
+		http_response_code(400);
+		echo 'Invalid contact name format.';
+		exit;
+	}
+	
+	$nameSafe = sanitizeText($nameValid);
+	$nameNField = formatNameForVCard($nameSafe);
+	
+	// Format N: field for iOS (exactly 5 semicolon-separated parts)
+	$nParts = explode(';', $nameNField);
+	while (count($nParts) < 5) {
+		$nParts[] = '';
+	}
+	$nameNField = implode(';', array_slice($nParts, 0, 5));
+	
+	// Collect all phone numbers from all contacts
+	$phoneNumbersWithLabels = [];
+	$mobileNumber = null;
+	
+	// Process all contacts to collect phone numbers with labels
+	foreach ($contacts as $index => $c) {
+		if (empty($c['number'])) {
+			continue;
+		}
+		
+		// Determine default label based on contact
+		$defaultLabel = ($index === $bacoorEmergencyIndex) 
+			? 'BACOOR EMERGENCY' 
+			: (!empty($c['label']) ? $c['label'] : (!empty($c['name']) ? $c['name'] : 'Emergency Contact'));
+		$defaultLabel = sanitizeText($defaultLabel);
 		
 		$numberParts = explode(',', $c['number']);
 		$numberParts = array_map('trim', $numberParts);
 		$numberParts = array_filter($numberParts);
 		
-		// vCard 3.0 format with both N: and FN: fields for maximum compatibility
-		// N: field is required by iOS, FN: field is used by Android (both are standard vCard 3.0)
-		$all .= "BEGIN:VCARD\r\n" .
-			"VERSION:3.0\r\n" .
-			"N:" . $nameNField . "\r\n" .
-			"FN:" . $nameSafe . "\r\n";
-		
 		foreach ($numberParts as $numPart) {
-			// Clean phone number to remove carrier labels (Globe, Smart, etc.)
+			$labelToUse = $defaultLabel;
+			
+			// Extract label from number if present (format: "number | label")
+			if (strpos($numPart, '|') !== false) {
+				$parts = explode('|', $numPart, 2);
+				$numPart = trim($parts[0]);
+				$extractedLabel = trim($parts[1] ?? '');
+				if (!empty($extractedLabel)) {
+					$labelToUse = sanitizeText($extractedLabel);
+				}
+			}
+			
 			$cleanedNumber = cleanPhoneNumber($numPart);
 			$numberSafe = sanitizeText($cleanedNumber);
-			$numberType = (strlen(preg_replace('/[^0-9]/', '', $numberSafe)) >= 8 && strlen(preg_replace('/[^0-9]/', '', $numberSafe)) <= 10) ? 'WORK' : 'CELL';
-			$all .= "TEL;TYPE=" . $numberType . ":" . $numberSafe . "\r\n";
+			
+			if (empty($numberSafe)) {
+				continue;
+			}
+			
+			$digitsOnly = preg_replace('/[^0-9]/', '', $numberSafe);
+			
+			// Short numbers (like 161) are treated as mobile
+			if (strlen($digitsOnly) <= 3) {
+				if ($mobileNumber === null) {
+					$mobileNumber = $numberSafe;
+				}
+			} else {
+				// Avoid duplicates by number
+				$isDuplicate = false;
+				foreach ($phoneNumbersWithLabels as $existing) {
+					if ($existing['number'] === $numberSafe) {
+						$isDuplicate = true;
+						break;
+					}
+				}
+				if (!$isDuplicate) {
+					$phoneNumbersWithLabels[] = [
+						'number' => $numberSafe,
+						'label' => $labelToUse
+					];
+				}
+			}
 		}
-		
-		$all .= "END:VCARD\r\n";
 	}
-	outputVCard('Emergency_Contacts_All.vcf', $all);
+	
+	$vcard = "BEGIN:VCARD\r\n" .
+		"VERSION:3.0\r\n" .
+		"FN:" . $nameSafe . "\r\n" .
+		"N:" . $nameNField . "\r\n";
+	
+	// Add mobile number with custom label
+	if ($mobileNumber !== null) {
+		$mobileLabelEscaped = str_replace('"', '\\"', $nameSafe);
+		$vcard .= "TEL;TYPE=\"" . $mobileLabelEscaped . "\":" . $mobileNumber . "\r\n";
+	}
+	
+	// Add all other numbers with their labels
+	foreach ($phoneNumbersWithLabels as $phoneData) {
+		$labelEscaped = str_replace('"', '\\"', $phoneData['label']);
+		$vcard .= "TEL;TYPE=\"" . $labelEscaped . "\":" . $phoneData['number'] . "\r\n";
+	}
+	
+	$vcard .= "END:VCARD\r\n";
+	
+	outputVCard('Emergency_Contacts_All.vcf', $vcard);
 }
 
 http_response_code(400);

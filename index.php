@@ -120,7 +120,24 @@ function getMessengerIcon() {
 							<?php echo htmlspecialchars($priority['label']); ?>
 						</div>
 						<div class="contact-number-display">
-							<?php echo htmlspecialchars($priority['number']); ?>
+							<?php 
+							// Remove labels after pipe symbol (|) from number display
+							// Process each comma-separated number and remove pipe labels
+							$numberParts = explode(',', $priority['number']);
+							$cleanedParts = [];
+							foreach ($numberParts as $part) {
+								$part = trim($part);
+								// Remove pipe and everything after it
+								if (strpos($part, '|') !== false) {
+									$part = trim(explode('|', $part)[0]);
+								}
+								if (!empty($part)) {
+									$cleanedParts[] = $part;
+								}
+							}
+							$displayNumber = implode(',', $cleanedParts);
+							echo htmlspecialchars($displayNumber); 
+							?>
 						</div>
 					</div>
 				</div>

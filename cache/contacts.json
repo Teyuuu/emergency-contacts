@@ -1,20 +1,13 @@
 [
     {
-        "number": "161",
+        "number": "161,(046) 417-0727 | BDRRMO",
         "name": "EMERGENCY",
         "logo": "images\\strikeas1.png",
         "label": "BACOOR EMERGENCY",
         "messenger": ""
     },
     {
-        "number": "(046) 417-0727",
-        "name": "BDDRMO",
-        "logo": "images\\bdrrmo.png",
-        "label": "BACOOR DISASTER RISK REDUCTION AND MANAGEMENT OFFICE",
-        "messenger": ""
-    },
-    {
-        "number": "(046) 417-6366,0977-752-0819 | Globe,0998-598-5593 | Smart",
+        "number": "(046) 417-6366,0977-752-0819 | PNP Globe,0998-598-5593 | PNP Smart",
         "name": "PNP",
         "logo": "images\\pnp.png",
         "label": "PHILIPPINE NATIONAL POLICE - BACOOR",
@@ -35,7 +28,7 @@
         "messenger": ""
     },
     {
-        "number": "(046) 417-0207,(046) 161,(046) 477-1041,(046) 417-1100,0977-752-0819 | Globe,0999-221-7882 | Smart",
+        "number": "(046) 417-0207,(046) 477-1041 | City Hotline Alternative,(046) 417-1100 | BDRRMO Alternative,0999-221-7882 | City Hotline Smart",
         "name": "Other Bacoor City Hotlines",
         "logo": "images\\default.png",
         "label": "OTHER BACOOR CITY HOTLINES",

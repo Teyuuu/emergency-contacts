@@ -29,6 +29,38 @@ function outputVCard(string $filename, string $content): void {
 	exit;
 }
 
+// Helper to emit a vCard file with inline disposition for iOS auto-import
+// This forces iOS to automatically import all contacts instead of showing preview
+function outputVCardInline(string $filename, string $content): void {
+	// Clear any previous output
+	if (ob_get_level()) {
+		ob_clean();
+	}
+	
+	// Use text/x-vcard MIME type - iOS Safari recognizes this better for multi-contact files
+	// This helps iOS properly parse and import all contacts from the file
+	header('Content-Type: text/x-vcard; charset=utf-8');
+	
+	// Use inline disposition so iOS automatically opens and imports the contacts
+	// This should trigger iOS to show "Add All X Contacts" option
+	$encodedFilename = rawurlencode($filename);
+	header('Content-Disposition: inline; filename="' . addslashes($filename) . '"; filename*=UTF-8\'\'' . $encodedFilename);
+	
+	header('Content-Transfer-Encoding: binary');
+	header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+	header('Pragma: no-cache');
+	header('Expires: 0');
+	header('Content-Length: ' . strlen($content));
+	
+	// Remove X-Download-Options header for inline content (iOS needs this)
+	// Additional headers for secure downloads
+	header('X-Content-Type-Options: nosniff');
+	
+	// Ensure content is output with proper encoding
+	echo $content;
+	exit;
+}
+
 // Sanitize simple text for vCard
 function sanitizeText(string $text): string {
 	$text = trim($text);

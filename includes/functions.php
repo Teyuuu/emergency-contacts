@@ -25,11 +25,6 @@ function outputVCard(string $filename, string $content): void {
 	header('X-Content-Type-Options: nosniff');
 	header('X-Download-Options: noopen');
 	
-	// Ensure proper encoding for mobile devices
-	if (function_exists('mb_convert_encoding')) {
-		$content = mb_convert_encoding($content, 'UTF-8', 'UTF-8');
-	}
-	
 	echo $content;
 	exit;
 }
@@ -60,7 +55,7 @@ function cleanPhoneNumber(string $number): string {
 	}
 	
 	// Remove common carrier labels (case-insensitive) from anywhere in the string
-	$carriers = ['Globe', 'Smart', 'Sun', 'TNT', 'TM', 'DITO', 'PLDT', 'GLOBE', 'SMART', 'SUN', 'TNT', 'TM', 'DITO', 'PLDT'];
+	$carriers = ['Globe', 'Smart', 'Sun', 'TNT', 'TM', 'DITO', 'PLDT'];
 	foreach ($carriers as $carrier) {
 		// Remove carrier name at the end (with or without space)
 		$number = preg_replace('/\s*' . preg_quote($carrier, '/') . '\s*$/i', '', $number);

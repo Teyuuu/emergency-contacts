@@ -22,6 +22,8 @@ if (session_status() === PHP_SESSION_NONE) {
 	}
 }
 
+require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/security.php';
 require_once __DIR__ . '/includes/contacts.php';
 
 $_SESSION['contact_store'] = [];
@@ -34,6 +36,14 @@ foreach ($contacts as $index => $contact) {
 	$contactHashes[$index] = $shortHash;
 } 
 
+// SVG Icons
+function getCallIcon() {
+	return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;"><path d="M20.01 15.38C18.78 15.38 17.59 15.18 16.48 14.82C16.13 14.7 15.74 14.79 15.47 15.06L13.9 17.03C11.07 15.68 8.42 13.13 7.01 10.2L8.96 8.54C9.23 8.26 9.31 7.87 9.2 7.52C8.83 6.41 8.64 5.22 8.64 3.99C8.64 3.45 8.19 3 7.65 3H4.19C3.65 3 3 3.24 3 3.99C3 13.28 10.73 21 20.01 21C20.76 21 21 20.37 21 19.83V16.37C21 15.83 20.55 15.38 20.01 15.38Z" fill="currentColor"/></svg>';
+}
+
+function getMessengerIcon() {
+	return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;"><path d="M12 2C6.477 2 2 6.477 2 12C2 14.42 3.08 16.57 4.82 18.03L3.5 22L7.97 20.68C9.24 20.89 10.59 21 12 21C17.523 21 22 16.523 22 11C22 5.477 17.523 1 12 1V2Z" fill="currentColor"/><path d="M12 8L8 12L12 16L16 12L12 8Z" fill="white"/></svg>';
+}
 
 ?>
 <!DOCTYPE html>
@@ -91,7 +101,15 @@ foreach ($contacts as $index => $contact) {
 		<!-- Priority Emergency -->
 		<?php if (!empty($contacts)): 
 			$priority = $contacts[0];
-			$priorityHash = $contactHashes[0];
+			// Get Messenger URL from config (contact-specific or default)
+			$priorityMessenger = MESSENGER_URL;
+			if (isset($MESSENGER_LINKS) && is_array($MESSENGER_LINKS) && isset($MESSENGER_LINKS[$priority['name']])) {
+				$priorityMessenger = $MESSENGER_LINKS[$priority['name']];
+			} elseif (!empty($priority['messenger'])) {
+				$priorityMessenger = $priority['messenger'];
+			}
+			// Validate URL to prevent XSS/javascript: protocol attacks
+			$priorityMessenger = validateUrl($priorityMessenger);
 		?>
 			<div class="contact-card priority-contact-card">
 				<div class="priority-emergency-badge">🚨 PRIORITY EMERGENCY</div>
@@ -115,16 +133,19 @@ foreach ($contacts as $index => $contact) {
 					if (count($priorityNumbers) > 1): 
 					?>
 						<button class="btn btn-call" onclick="openModal('<?php echo htmlspecialchars(json_encode($priorityNumbers), ENT_QUOTES); ?>', '<?php echo htmlspecialchars($priority['name'], ENT_QUOTES); ?>')">
+							<?php echo getCallIcon(); ?>
 							Call
 						</button>
 					<?php else: ?>
 						<a class="btn btn-call" href="tel:<?php echo rawurlencode($priorityNumbers[0]); ?>" role="button">
+							<?php echo getCallIcon(); ?>
 							Call
 						</a>
 					<?php endif; ?>
 					
-					<a class="btn btn-save" href="includes/download.php?type=single&amp;id=<?php echo htmlspecialchars($priorityHash); ?>" role="button">
-						Save
+					<a class="btn btn-messenger" href="<?php echo $priorityMessenger; ?>" target="_blank" rel="noopener noreferrer" role="button">
+						<?php echo getMessengerIcon(); ?>
+						Messenger
 					</a>
 				</div>
 			</div>
@@ -134,12 +155,19 @@ foreach ($contacts as $index => $contact) {
 		<?php if (!empty($contacts)): ?>
 		<div class="contacts-grid priority-included">
 			<?php foreach (array_slice($contacts, 1) as $offset => $contact): 
-				$contactIndex = $offset + 1;
-				$contactHash = $contactHashes[$contactIndex];
 				$numbers = explode(',', $contact['number']);
 				$numbers = array_map('trim', $numbers);
 				$numbers = array_filter($numbers);
 				$hasAlternatives = count($numbers) > 1;
+				// Get Messenger URL from config (contact-specific or default)
+				$contactMessenger = MESSENGER_URL;
+				if (isset($MESSENGER_LINKS) && is_array($MESSENGER_LINKS) && isset($MESSENGER_LINKS[$contact['name']])) {
+					$contactMessenger = $MESSENGER_LINKS[$contact['name']];
+				} elseif (!empty($contact['messenger'])) {
+					$contactMessenger = $contact['messenger'];
+				}
+				// Validate URL to prevent XSS/javascript: protocol attacks
+				$contactMessenger = validateUrl($contactMessenger);
 			?>
 				<div class="contact-card">
 					<div class="contact-header">
@@ -156,16 +184,19 @@ foreach ($contacts as $index => $contact) {
 					<div class="button-group">
 						<?php if ($hasAlternatives): ?>
 							<button class="btn btn-call" onclick="openModal('<?php echo htmlspecialchars(json_encode($numbers), ENT_QUOTES); ?>', '<?php echo htmlspecialchars($contact['name'], ENT_QUOTES); ?>')">
-							Call
+								<?php echo getCallIcon(); ?>
+								Call
 							</button>
 						<?php else: ?>
 							<a class="btn btn-call" href="tel:<?php echo rawurlencode($numbers[0]); ?>" role="button">
+								<?php echo getCallIcon(); ?>
 								Call
 							</a>
 						<?php endif; ?>
 						
-						<a class="btn btn-save" href="includes/download.php?type=single&amp;id=<?php echo htmlspecialchars($contactHash); ?>" role="button">
-							Save
+						<a class="btn btn-messenger" href="<?php echo $contactMessenger; ?>" target="_blank" rel="noopener noreferrer" role="button">
+							<?php echo getMessengerIcon(); ?>
+							Messenger
 						</a>
 					</div>
 				</div>
@@ -177,7 +208,7 @@ foreach ($contacts as $index => $contact) {
 			</div>
 		<?php endif; ?>
 
-		<!-- Save All -->
+		<!-- Save All Contacts -->
 		<?php if (!empty($contacts)): ?>
 			<div class="save-all-section">
 				<div class="save-all-text">Click if you want to</div>
@@ -197,100 +228,7 @@ foreach ($contacts as $index => $contact) {
 		</div>
 	</div>
 
-	<script>
-		function parseNumberWithLabel(numberString) {
-			const parts = numberString.split('|').map(s => s.trim());
-			return {
-				number: parts[0],
-				label: parts[1] || null
-			};
-		}
-
-		function openModal(numbersJson, contactName) {
-			const modal = document.getElementById('numberModal');
-			const modalTitle = document.getElementById('modalTitle');
-			const modalNumberList = document.getElementById('modalNumberList');
-			let numbers;
-			try {
-				// Validate JSON before parsing to prevent JSON injection
-				if (typeof numbersJson !== 'string' || numbersJson.length > 5000) {
-					console.error('Invalid input data');
-					return;
-				}
-				numbers = JSON.parse(numbersJson);
-				// Validate that it's an array
-				if (!Array.isArray(numbers)) {
-					console.error('Invalid data format');
-					return;
-				}
-				// Limit array size to prevent DoS
-				if (numbers.length > 50) {
-					numbers = numbers.slice(0, 50);
-				}
-			} catch (e) {
-				console.error('Failed to parse numbers:', e);
-				return;
-			}
-			
-			// Sanitize contact name (already escaped from PHP, but double-check)
-			modalTitle.textContent = contactName || 'Select Number';
-			modalNumberList.innerHTML = '';
-			
-			numbers.forEach((numberString, index) => {
-				if (typeof numberString !== 'string' || numberString.length > 100) {
-					return; // Skip invalid entries
-				}
-				
-				const parsed = parseNumberWithLabel(numberString);
-				
-				const numberItem = document.createElement('div');
-				numberItem.className = 'modal-number-item';
-				
-				const label = document.createElement('div');
-				label.className = 'modal-number-label';
-				if (parsed.label) {
-					label.textContent = parsed.label.substring(0, 50); // Limit length
-				} else {
-					label.textContent = index === 0 ? 'Primary Number' : `Alternative ${index}`;
-				}
-				
-				const numberDisplay = document.createElement('div');
-				numberDisplay.className = 'modal-number-display';
-				numberDisplay.textContent = parsed.number.substring(0, 50); // Limit length
-				
-				const callBtn = document.createElement('a');
-				callBtn.className = 'modal-call-btn';
-				callBtn.href = 'tel:' + encodeURIComponent(parsed.number.substring(0, 50));
-				callBtn.innerHTML = 'Call This Number';
-				
-				numberItem.appendChild(label);
-				numberItem.appendChild(numberDisplay);
-				numberItem.appendChild(callBtn);
-				
-				modalNumberList.appendChild(numberItem);
-			});
-			
-			modal.classList.add('active');
-			document.body.style.overflow = 'hidden';
-		}
-		
-		function closeModal() {
-			const modal = document.getElementById('numberModal');
-			modal.classList.remove('active');
-			document.body.style.overflow = '';
-		}
-		
-		document.getElementById('numberModal').addEventListener('click', function(e) {
-			if (e.target === this) {
-				closeModal();
-			}
-		});
-		
-		document.addEventListener('keydown', function(e) {
-			if (e.key === 'Escape') {
-				closeModal();
-			}
-		});
-	</script>
+	<!-- JavaScript -->
+	<script src="js/contact.js?<?= VERSION ?>"></script>
 </body>
 </html>

@@ -1,7 +1,20 @@
 <?php
 /**
  * Manual cache refresh endpoint
- * Usage: includes/fetch.php?key={FETCH_KEY}
+ * 
+ * This endpoint checks if Google Sheet data has changed (hash comparison)
+ * and only fetches new data if changes are detected.
+ * This avoids wasting API calls and hitting Google Sheets rate limits.
+ * 
+ * Usage: 
+ *   http://example.com/includes/fetch.php?key={FETCH_KEY}
+ * 
+ * Example:
+ *   http://example.com/includes/fetch.php?key=YOUR_FETCH_KEY
+ * 
+ * Response:
+ *   - If no changes: Returns "No changes detected" (no API call to fetch full CSV)
+ *   - If changes detected: Fetches and updates cache with new data
  */
 
 require_once __DIR__ . '/config.php';

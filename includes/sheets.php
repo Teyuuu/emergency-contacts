@@ -6,7 +6,6 @@ require_once __DIR__ . '/security.php';
 define('CACHE_DIR', __DIR__ . '/../cache');
 define('CACHE_FILE', CACHE_DIR . '/contacts.json');
 define('CACHE_META_FILE', CACHE_DIR . '/cache_meta.json');
-define('CACHE_CHECK_INTERVAL', 60);
 
 /**
  * Get the base URL without cache-busting parameters for consistent hash comparison
@@ -66,10 +65,12 @@ function saveContactsToCache(array $contacts, string $dataHash): bool {
 	}
 	
 	$json = json_encode($contacts, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+	$now = time();
 	$meta = [
-		'timestamp' => time(),
+		'timestamp' => $now,
 		'data_hash' => $dataHash,
-		'contact_count' => count($contacts)
+		'contact_count' => count($contacts),
+		'last_hash_check' => $now // Track when we last checked for changes
 	];
 	
 	$jsonWritten = @file_put_contents(CACHE_FILE, $json);
@@ -80,34 +81,46 @@ function saveContactsToCache(array $contacts, string $dataHash): bool {
 
 /**
  * Check if cache needs to be refreshed by comparing data hash
- * Only checks hash when explicitly requested (manual refresh)
- * This avoids unnecessary Google Sheets API calls
+ * Only checks hash when explicitly requested (manual refresh via fetch.php)
+ * This avoids wasting Google Sheets API calls and hitting rate limits
+ * 
+ * @param string $csvUrl The Google Sheet CSV URL
+ * @param bool $checkHash If true, checks hash to detect changes. If false, returns false (use cache)
+ * @return bool True if cache needs refresh, false if cache is still valid
  */
 function shouldRefreshCache(string $csvUrl, bool $checkHash = false): bool {
+	// If no cache exists, we need to fetch
 	if (!file_exists(CACHE_META_FILE)) {
 		return true;
 	}
 	
 	$meta = @json_decode(file_get_contents(CACHE_META_FILE), true);
 	if (!$meta || !isset($meta['timestamp'])) {
-		return true;
+		return true; // Invalid cache metadata, need to fetch
 	}
 	
 	// Only check hash if explicitly requested (manual refresh via fetch.php)
-	// Otherwise, rely on cache indefinitely to avoid wasting Google Sheets API calls
+	// This prevents automatic API calls on every page load
 	if (!$checkHash) {
-		return false; // Cache exists, no need to refresh
+		return false; // Cache exists, no automatic check - use cache
 	}
 	
+	// Manual refresh requested - check if data has actually changed by comparing hash
 	$baseUrl = getBaseGoogleSheetUrl($csvUrl);
 	$checkUrl = normalizeGoogleSheetUrlWithoutCacheBust($baseUrl);
 	$checkUrl .= (strpos($checkUrl, '?') !== false ? '&' : '?') . 'cachebust=' . time();
 	
 	$currentHash = getGoogleSheetDataHash($checkUrl);
 	if ($currentHash === false) {
-		return false; // If hash check fails, keep using cache
+		// Hash check failed (network error, etc.) - keep using cache
+		return false;
 	}
 	
+	// Update last check time
+	$meta['last_hash_check'] = time();
+	@file_put_contents(CACHE_META_FILE, json_encode($meta));
+	
+	// Only return true (need refresh) if hash actually changed
 	return !isset($meta['data_hash']) || $meta['data_hash'] !== $currentHash;
 }
 
@@ -271,12 +284,13 @@ function loadContactsFromGoogleSheet(string $csvUrl, bool $forceRefresh = false)
 	}
 	
 	// Try to load from cache first (unless forcing refresh)
+	// No automatic checking - cache is used indefinitely until manually refreshed
+	// This avoids wasting Google Sheets API calls and hitting rate limits
 	$cachedContacts = null;
 	if (!$forceRefresh) {
 		$cachedContacts = loadContactsFromCache();
 		
-		// If cache exists, use it indefinitely - no time-based expiration
-		// This avoids unnecessary Google Sheets API calls and delays
+		// If cache exists, use it - no automatic checks to save API calls
 		if ($cachedContacts !== null) {
 			return $cachedContacts;
 		}
@@ -393,6 +407,12 @@ function loadContactsFromGoogleSheet(string $csvUrl, bool $forceRefresh = false)
 		$logoRaw = $assoc['logo file'] ?? ($assoc['logo'] ?? '');
 		$logo = normalizeLogoPath($logoRaw);
 		$label = $assoc['label'] ?? '';
+		$messenger = '';
+		
+		// Get Messenger URL from config file (contact-specific or default)
+		// Messenger links are managed in config.php via $MESSENGER_LINKS array
+		// This allows easy editing without modifying Google Sheets
+		// The messenger field in the contact array will be set, but index.php will check config.php first
 		
 		if ($name === '' || $number === '') continue;
 		
@@ -417,6 +437,7 @@ function loadContactsFromGoogleSheet(string $csvUrl, bool $forceRefresh = false)
 			'name' => $name,
 			'logo' => $logo,
 			'label' => $label !== '' ? $label : $name,
+			'messenger' => $messenger,
 		];
 	}
 

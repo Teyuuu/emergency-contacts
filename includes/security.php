@@ -4,24 +4,6 @@
  * Security helper functions
  */
 
-// Sanitize input to prevent XSS (general purpose)
-function sanitizeInput(string $input, int $maxLength = 1000): string {
-	$input = trim($input);
-	if (strlen($input) > $maxLength) {
-		$input = substr($input, 0, $maxLength);
-	}
-	return htmlspecialchars(strip_tags($input), ENT_QUOTES, 'UTF-8');
-}
-
-// Validate phone number format
-function validatePhoneNumber(string $number): bool {
-    // Allow digits, spaces, hyphens, parentheses, plus sign
-    $pattern = '/^[\d\s\-\+\(\)]+$/';
-    $cleaned = preg_replace('/[\s\-\(\)\+]/', '', $number);
-    // Phone numbers should be 3-15 digits (supports emergency numbers like 191, 911, and short landlines like 321123)
-    return preg_match($pattern, $number) && strlen($cleaned) >= 3 && strlen($cleaned) <= 15;
-}
-
 // Validate and sanitize name
 function validateName(string $name) {
     $name = trim($name);
@@ -87,30 +69,52 @@ function getClientIP(): string {
     return '0.0.0.0';
 }
 
-// Validate Google Sheet URL format
-function validateGoogleSheetUrl(string $url): bool {
+// Validate and sanitize URL for safe use in href attributes
+function validateUrl(string $url, array $allowedSchemes = ['http', 'https']): string {
     if (empty($url)) {
-        return false;
+        return '#';
     }
     
-    // Must be a valid URL
-    if (filter_var($url, FILTER_VALIDATE_URL) === false) {
-        return false;
-    }
+    // Remove any whitespace
+    $url = trim($url);
     
-    // Must be from Google Sheets domain
-    if (strpos($url, 'docs.google.com/spreadsheets/') === false) {
-        return false;
-    }
-    
-    // Prevent access to local files or dangerous protocols
-    $dangerous = ['file://', 'ftp://', 'javascript:', 'data:', 'vbscript:'];
+    // Check for dangerous protocols
+    $dangerous = ['javascript:', 'data:', 'vbscript:', 'file://', 'ftp://'];
     foreach ($dangerous as $danger) {
-        if (stripos($url, $danger) !== false) {
-            return false;
+        if (stripos($url, $danger) === 0) {
+            error_log("SECURITY: Dangerous URL scheme detected: $url");
+            return '#';
         }
     }
     
-    return true;
+    // Validate URL format
+    if (filter_var($url, FILTER_VALIDATE_URL) === false) {
+        // Check if it's a relative URL
+        if (strpos($url, '/') === 0 || strpos($url, './') === 0) {
+            // Allow relative URLs but validate they don't contain dangerous patterns
+            if (strpos($url, '..') !== false || strpos($url, chr(0)) !== false) {
+                error_log("SECURITY: Dangerous relative URL detected: $url");
+                return '#';
+            }
+            return htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
+        }
+        error_log("SECURITY: Invalid URL format: $url");
+        return '#';
+    }
+    
+    // Parse URL to check scheme
+    $parsed = parse_url($url);
+    if ($parsed === false || !isset($parsed['scheme'])) {
+        error_log("SECURITY: URL parse failed: $url");
+        return '#';
+    }
+    
+    // Check if scheme is allowed
+    if (!in_array(strtolower($parsed['scheme']), $allowedSchemes, true)) {
+        error_log("SECURITY: Disallowed URL scheme: " . $parsed['scheme']);
+        return '#';
+    }
+    
+    return htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
 }
 
